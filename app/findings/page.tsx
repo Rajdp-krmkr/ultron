@@ -52,8 +52,12 @@ export default function FindingsDashboard() {
       (verifiedFilter === 'Verified' && finding.verifiedByLlm) || 
       (verifiedFilter === 'Unverified' && !finding.verifiedByLlm);
 
-    return matchesSearch && matchesSev && matchesStatus && matchesVerified && finding.repoId === selectedRepoId;
+    const matchesRepo = !selectedRepoId || finding.repoId === selectedRepoId || !finding.repoId;
+
+    return matchesSearch && matchesSev && matchesStatus && matchesVerified && matchesRepo;
   });
+
+  const displayFindings = filteredFindings.length > 0 ? filteredFindings : findings;
 
   return (
     <div className="space-y-6 font-mono text-xs">
@@ -154,7 +158,7 @@ export default function FindingsDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredFindings.map((finding) => {
+                {displayFindings.map((finding) => {
                   const repo = repositories.find(r => r.id === finding.repoId);
                   return (
                     <tr 
@@ -220,7 +224,7 @@ export default function FindingsDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredFindings.map((finding) => {
+          {displayFindings.map((finding) => {
             const repo = repositories.find(r => r.id === finding.repoId);
             return (
               <div 

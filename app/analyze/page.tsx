@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSecurityStore } from '../../store/useSecurityStore';
 import {
   GitBranch,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function AnalyzeRepository() {
+  const router = useRouter();
   const { startAnalysis, repositories, addTerminalLog } = useSecurityStore();
   const [gitUrl, setGitUrl] = useState('');
   const [activeTab, setActiveTab] = useState<'url' | 'zip' | 'local'>('url');
@@ -36,7 +38,7 @@ export default function AnalyzeRepository() {
     }
 
     startAnalysis(target);
-    window.open('/pipeline', '_blank');
+    router.push('/pipeline');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +63,7 @@ export default function AnalyzeRepository() {
   return (
     <div className="space-y-4 font-mono text-xs max-w-6xl mx-auto">
       {/* Banner */}
-      <div className="border border-border bg-surface p-3 rounded flex items-center justify-between relative overflow-hidden">
+      <div className="border border-border bg-surface p-3 rounded flex items-center justify-between relative overflow-hidden text-left">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5">
             <SearchCode className="w-3.5 h-3.5 text-primary" />
@@ -81,7 +83,7 @@ export default function AnalyzeRepository() {
               <button
                 type="button"
                 onClick={() => setActiveTab('url')}
-                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] cursor-pointer ${
                   activeTab === 'url' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
                 }`}
               >
@@ -91,7 +93,7 @@ export default function AnalyzeRepository() {
               <button
                 type="button"
                 onClick={() => setActiveTab('zip')}
-                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] cursor-pointer ${
                   activeTab === 'zip' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
                 }`}
               >
@@ -101,7 +103,7 @@ export default function AnalyzeRepository() {
               <button
                 type="button"
                 onClick={() => setActiveTab('local')}
-                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 hover:text-white transition duration-150 font-bold tracking-wider text-[10px] cursor-pointer ${
                   activeTab === 'local' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
                 }`}
               >
@@ -111,7 +113,7 @@ export default function AnalyzeRepository() {
             </div>
 
             {/* Input Form Fields */}
-            <form onSubmit={handleStartAnalysis} className="p-4 flex flex-col justify-between space-y-4 min-h-[240px]">
+            <form onSubmit={handleStartAnalysis} className="p-4 flex flex-col justify-between space-y-4 min-h-[240px] text-left">
               <div className="space-y-3 flex-1">
                 {activeTab === 'url' && (
                   <div className="space-y-1.5">
@@ -212,7 +214,7 @@ export default function AnalyzeRepository() {
 
         {/* Right Side Scan History logs list */}
         <div className="space-y-3">
-          <div className="border border-border bg-surface p-3 rounded space-y-3 flex flex-col min-h-[300px]">
+          <div className="border border-border bg-surface p-3 rounded space-y-3 flex flex-col min-h-[300px] text-left">
             <div className="flex items-center justify-between border-b border-border pb-2">
               <h3 className="font-sans font-bold text-white tracking-widest text-[9px] uppercase flex items-center gap-1.5">
                 <Clock className="w-3 h-3 text-primary" />
@@ -251,7 +253,7 @@ export default function AnalyzeRepository() {
                       type="button"
                       onClick={() => {
                         startAnalysis(repo.url);
-                        window.open('/pipeline', '_blank');
+                        router.push('/pipeline');
                       }}
                       className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
                     >
