@@ -119,106 +119,11 @@ interface SecurityState {
   resetSettings: () => void;
 }
 
-// Initial Mock Repositories
-const initialRepos: Repository[] = [
-  { id: '1', name: 'financial-api-gateway', url: 'github.com/ultron-sec/financial-api-gateway', language: 'TypeScript', status: 'Alert', score: 62, criticalCount: 2, highCount: 5, mediumCount: 8, lowCount: 12, lastScanned: '2026-07-25 10:32', filesCount: 142, linesCount: 28430 },
-  { id: '2', name: 'auth-server-oauth', url: 'github.com/ultron-sec/auth-server-oauth', language: 'Go', status: 'Clean', score: 94, criticalCount: 0, highCount: 0, mediumCount: 1, lowCount: 4, lastScanned: '2026-07-24 18:15', filesCount: 68, linesCount: 12150 },
-  { id: '3', name: 'ecommerce-cart-service', url: 'github.com/ultron-sec/ecommerce-cart-service', language: 'JavaScript', status: 'Alert', score: 71, criticalCount: 1, highCount: 3, mediumCount: 5, lowCount: 9, lastScanned: '2026-07-25 08:00', filesCount: 98, linesCount: 18740 },
-  { id: '4', name: 'data-analytics-pipeline', url: 'github.com/ultron-sec/data-analytics-pipeline', language: 'Python', status: 'Scanning', score: 85, criticalCount: 0, highCount: 1, mediumCount: 4, lowCount: 8, lastScanned: 'Scanning Now', filesCount: 245, linesCount: 54100 },
-  { id: '5', name: 'kubernetes-operator-core', url: 'github.com/ultron-sec/kubernetes-operator-core', language: 'Go', status: 'Clean', score: 98, criticalCount: 0, highCount: 0, mediumCount: 0, lowCount: 2, lastScanned: '2026-07-23 11:45', filesCount: 120, linesCount: 31200 }
-];
+// Repositories starting clean (empty by default until scanned)
+const initialRepos: Repository[] = [];
 
-// Initial Mock Findings
-const initialFindings: Finding[] = [
-  {
-    id: 'f-101',
-    repoId: '1',
-    ruleId: 'SEC-SQL-01',
-    title: 'SQL Injection in transaction search endpoint',
-    severity: 'Critical',
-    confidence: 'High',
-    description: 'User input from query parameter `searchTerm` is concatenated directly into a database query expression, allowing remote SQL command execution.',
-    affectedFile: 'src/controllers/transactionController.ts',
-    lineNumber: 42,
-    codeSnippet: `import { db } from "../config/db";\n\nexport async function getTransactions(req: any, res: any) {\n  const searchTerm = req.query.searchTerm;\n  // VULNERABLE: Direct concatenation of user input\n  const query = "SELECT * FROM transactions WHERE description LIKE '%" + searchTerm + "%'";\n  \n  try {\n    const results = await db.query(query);\n    res.json(results);\n  } catch (err) {\n    res.status(500).json({ error: err.message });\n  }\n}`,
-    verifiedByLlm: true,
-    llmConfidence: 97,
-    status: 'Open',
-    source: 'req.query.searchTerm (line 4)',
-    sink: 'db.query(query) (line 9)',
-    recommendation: 'Use parameterized queries or ORM syntax to avoid SQL injection vulnerability:\n\n```typescript\nconst query = "SELECT * FROM transactions WHERE description LIKE ?";\nconst results = await db.query(query, [`%${searchTerm}%`]);\n```',
-    timeline: [
-      { time: '13:02:11', stage: 'READ_FILE', status: 'completed', description: 'Read target file transactionController.ts' },
-      { time: '13:02:12', stage: 'READ_FUNCTION', status: 'completed', description: 'Extracted getTransactions function scope and call bindings' },
-      { time: '13:02:13', stage: 'RECORD_FACT', status: 'completed', description: 'Confirmed unparameterized DB call mapping to Express query argument' },
-      { time: '13:02:14', stage: 'FINISH', status: 'completed', description: 'Confirmed SQL Injection finding via agentic detector verification pass' }
-    ]
-  },
-  {
-    id: 'f-102',
-    repoId: '1',
-    ruleId: 'SEC-XSS-02',
-    title: 'Stored XSS in user profile comment box',
-    severity: 'High',
-    confidence: 'Medium',
-    description: 'User input in profile remarks is not sanitized before rendering in DOM, leading to possible scripting execution.',
-    affectedFile: 'src/components/profile/ProfileComments.tsx',
-    lineNumber: 88,
-    codeSnippet: `export function ProfileComments({ comments }) {\n  return (\n    <div className="comments-list">\n      {comments.map((comment) => (\n        <div key={comment.id} className="comment-card">\n          {/* VULNERABLE: Direct rendering of unsanitized HTML */}\n          <div dangerouslySetInnerHTML={{ __html: comment.text }} />\n        </div>\n      ))}\n    </div>\n  );\n}`,
-    verifiedByLlm: true,
-    llmConfidence: 89,
-    status: 'In Progress',
-    source: 'comment.text (line 7)',
-    sink: 'dangerouslySetInnerHTML (line 7)',
-    recommendation: 'Sanitize comment input text before insertion using a library like DOMPurify, or avoid dangerouslySetInnerHTML entirely.',
-    timeline: [
-      { time: '13:03:01', stage: 'READ_FILE', status: 'completed', description: 'Read ProfileComments.tsx' },
-      { time: '13:03:02', stage: 'RECORD_FACT', status: 'completed', description: 'Confirmed dangerouslySetInnerHTML is used without sanitization checks' },
-      { time: '13:03:03', stage: 'FINISH', status: 'completed', description: 'Verified Stored XSS vulnerability vector' }
-    ]
-  },
-  {
-    id: 'f-103',
-    repoId: '1',
-    ruleId: 'SEC-CSRF-05',
-    title: 'Missing CSRF protection on critical state modifying routes',
-    severity: 'Medium',
-    confidence: 'Low',
-    description: 'State modifying HTTP endpoints (POST, PUT, DELETE) lack token validation or samesite cookie enforcement, making them vulnerable to cross-site request forgery.',
-    affectedFile: 'src/routes/api.ts',
-    lineNumber: 14,
-    codeSnippet: `import { Router } from "express";\nimport { updateSettings } from "../controllers/userController";\n\nconst router = Router();\n\n// VULNERABLE: Lacks CSRF middleware validation before setting values\nrouter.post("/user/settings", updateSettings);`,
-    verifiedByLlm: false,
-    status: 'Open',
-    source: 'POST /user/settings endpoint route definition (line 7)',
-    sink: 'updateSettings controller mapping (line 7)',
-    recommendation: 'Implement standard CSRF token validation middleware (e.g. csurf) on all write endpoints.',
-    timeline: []
-  },
-  {
-    id: 'f-104',
-    repoId: '3',
-    ruleId: 'SEC-AUTH-09',
-    title: 'Hardcoded API secret key in configurations',
-    severity: 'Critical',
-    confidence: 'High',
-    description: 'A plain-text authorization credentials token was discovered directly in the production config script.',
-    affectedFile: 'src/config/aws.ts',
-    lineNumber: 5,
-    codeSnippet: `export const awsConfig = {\n  region: "us-east-1",\n  // VULNERABLE: Hardcoded credential token\n  accessKeyId: "AKIAIOSFODNN7EXAMPLE",\n  secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"\n};`,
-    verifiedByLlm: true,
-    llmConfidence: 100,
-    status: 'Open',
-    source: 'AWS Access Key configurations (line 4)',
-    sink: 'Hardcoded config file definitions (line 5)',
-    recommendation: 'Inject credentials at runtime using system environment variables (`process.env.AWS_SECRET_ACCESS_KEY`).',
-    timeline: [
-      { time: '10:01:05', stage: 'READ_FILE', status: 'completed', description: 'ULTRON credentials scanner read src/config/aws.ts' },
-      { time: '10:01:06', stage: 'RECORD_FACT', status: 'completed', description: 'Matched high entropy credentials sequence matching IAM format' },
-      { time: '10:01:07', stage: 'FINISH', status: 'completed', description: 'Confirmed secret leakage in repository config' }
-    ]
-  }
-];
+// Findings starting clean
+const initialFindings: Finding[] = [];
 
 // Initial Rules matching Ultron Engine
 const initialRules: Rule[] = [
@@ -305,7 +210,7 @@ const defaultConfig: UltronConfig = {
 
 export const useSecurityStore = create<SecurityState>((set, get) => ({
   repositories: initialRepos,
-  selectedRepoId: '1',
+  selectedRepoId: '',
   findings: initialFindings,
   terminalLogs: [
     { id: 'l1', timestamp: '12:58:47', type: 'info', message: 'ULTRON security analysis engine initialized (v8b).' },
@@ -454,6 +359,32 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
               activeRepoId: repoId
             }
           };
+        });
+
+        // Persist repository scan details and findings directly to MongoDB Atlas
+        fetch('/api/scans', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoId,
+            repoName,
+            repoUrl,
+            mode: get().settings.llm_mode,
+            language: newRepo.language,
+            status: 'Alert',
+            score: 54,
+            criticalCount: 1,
+            highCount: 0,
+            mediumCount: 0,
+            lowCount: 0,
+            filesCount: newRepo.filesCount,
+            linesCount: newRepo.linesCount,
+            findings: [generatedFinding]
+          })
+        }).then(() => {
+          get().addTerminalLog(`Scan details & findings stored in MongoDB Atlas ('ultron.scans').`, 'success');
+        }).catch(err => {
+          console.error('Failed to persist scan to MongoDB:', err);
         });
 
         get().addTerminalLog(`Scan completed. Security score updated to 54. SVGs built successfully.`, 'success');

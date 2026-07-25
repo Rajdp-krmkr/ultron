@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   ShieldAlert, 
   Terminal, 
@@ -11,14 +12,16 @@ import {
   Code2, 
   ChevronRight, 
   ArrowRight,
-  GitBranch,
   Layers,
   Lock,
-  Binary
+  Binary,
+  User,
+  LogOut
 } from 'lucide-react';
 
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -167,10 +170,34 @@ export default function LandingPage() {
           </div>
           <span className="font-sans font-bold tracking-widest text-white text-base neon-text-red">ULTRON</span>
         </div>
-        <div className="flex items-center gap-4 text-xs font-mono text-text-secondary">
-          <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">MCP_SERVER: ONLINE</span>
-          <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">VERSION: 2.1.0</span>
-        </div>
+
+        {/* Top Navbar Auth State display */}
+        {session?.user ? (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 border border-border bg-black/60 px-3 py-1.5 rounded text-xs font-mono text-white">
+              <User className="w-3.5 h-3.5 text-primary" />
+              <span className="font-bold">{session.user.name || session.user.email}</span>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="flex items-center gap-1 border border-border bg-black/60 hover:border-primary px-3 py-1.5 rounded text-xs font-mono text-critical hover:text-white transition cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">SIGN OUT</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 text-xs font-mono text-text-secondary">
+            <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">MCP_SERVER: ONLINE</span>
+            <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">VERSION: 2.1.0</span>
+            <Link 
+              href="/login" 
+              className="border border-border bg-black hover:border-primary px-3 py-1 rounded text-white transition cursor-pointer"
+            >
+              LOGIN
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Main hero space */}
@@ -210,12 +237,16 @@ export default function LandingPage() {
               >
                 ANALYZE REPOSITORY <ChevronRight className="w-3.5 h-3.5" />
               </Link>
-              <Link 
-                href="/login" 
-                className="inline-flex items-center gap-2 border border-border bg-black/60 hover:bg-card text-white text-xs px-5 py-3 rounded hover:border-primary/50 transition-all duration-150"
-              >
-                ENTER SOC DASHBOARD <ArrowRight className="w-3.5 h-3.5 text-primary" />
-              </Link>
+              
+              {/* Only show 'ENTER SOC DASHBOARD' button if user is NOT authenticated */}
+              {!session?.user && (
+                <Link 
+                  href="/login" 
+                  className="inline-flex items-center gap-2 border border-border bg-black/60 hover:bg-card text-white text-xs px-5 py-3 rounded hover:border-primary/50 transition-all duration-150"
+                >
+                  ENTER SOC DASHBOARD <ArrowRight className="w-3.5 h-3.5 text-primary" />
+                </Link>
+              )}
             </div>
           </div>
 

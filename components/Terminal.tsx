@@ -7,6 +7,8 @@ import {
   Trash2, 
   ChevronUp, 
   ChevronDown,
+  Maximize2,
+  Minimize2,
   Play
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -24,6 +26,7 @@ export function Terminal() {
     resetSettings 
   } = useSecurityStore();
   const [isOpen, setIsOpen] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +35,7 @@ export function Terminal() {
     if (terminalEndRef.current) {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [terminalLogs, isOpen]);
+  }, [terminalLogs, isOpen, isFullScreen]);
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,20 +162,33 @@ export function Terminal() {
     }
   };
 
+  const toggleFullScreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOpen) setIsOpen(true);
+    setIsFullScreen(!isFullScreen);
+  };
+
+  const containerClasses = isFullScreen
+    ? 'fixed inset-x-0 bottom-0 top-12 z-50 bg-[#050505] border-t border-border flex flex-col font-mono text-xs transition-all duration-300'
+    : `border-t border-border bg-[#050505] transition-all duration-300 flex flex-col font-mono text-xs z-20 shrink-0 sticky bottom-0 ${isOpen ? 'h-40' : 'h-7'}`;
+
   return (
-    <div 
-      className={`border-t border-border bg-[#050505] transition-all duration-300 flex flex-col font-mono text-xs z-20 shrink-0 sticky bottom-0 ${
-        isOpen ? 'h-40' : 'h-7'
-      }`}
-    >
+    <div className={containerClasses}>
       {/* Titlebar */}
       <div 
-        className="h-7 bg-[#0F0F0F] border-b border-border flex items-center justify-between px-3 cursor-pointer select-none"
-        onClick={() => setIsOpen(!isOpen)}
+        className="h-7 bg-[#0F0F0F] border-b border-border flex items-center justify-between px-3 cursor-pointer select-none shrink-0"
+        onClick={() => {
+          if (isFullScreen) {
+            setIsFullScreen(false);
+          } else {
+            setIsOpen(!isOpen);
+          }
+        }}
       >
         <div className="flex items-center gap-2">
           <TermIcon className="w-3 h-3 text-primary" />
           <span className="font-bold tracking-widest text-[9px] text-white">ULTRON_CLI_SHELL</span>
+          {isFullScreen && <span className="text-[8px] bg-primary/20 text-primary border border-primary/40 px-1 rounded">FULLSCREEN</span>}
           <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
         </div>
         
@@ -181,25 +197,40 @@ export function Terminal() {
             type="button"
             onClick={() => clearTerminalLogs()} 
             title="Clear Console"
-            className="p-0.5 hover:text-primary transition text-text-secondary"
+            className="p-0.5 hover:text-primary transition text-text-secondary cursor-pointer"
           >
             <Trash2 className="w-3 h-3" />
           </button>
+
+          {/* Full Screen Toggle Button */}
           <button 
             type="button"
-            onClick={() => setIsOpen(!isOpen)} 
-            className="p-0.5 hover:text-primary transition text-text-secondary"
+            onClick={toggleFullScreen}
+            title={isFullScreen ? "Exit Fullscreen Terminal" : "Fullscreen Terminal"}
+            className="p-0.5 hover:text-primary transition text-text-secondary cursor-pointer"
           >
-            {isOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+            {isFullScreen ? <Minimize2 className="w-3 h-3 text-primary" /> : <Maximize2 className="w-3 h-3" />}
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => {
+              if (isFullScreen) setIsFullScreen(false);
+              setIsOpen(!isOpen);
+            }} 
+            title={isOpen ? "Collapse Terminal" : "Expand Terminal"}
+            className="p-0.5 hover:text-primary transition text-text-secondary cursor-pointer"
+          >
+            {isOpen && !isFullScreen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
           </button>
         </div>
       </div>
 
       {/* Logs and Command Input */}
-      {isOpen && (
-        <div className="flex-1 flex flex-col min-h-0 bg-[#050505] p-2 scanline text-left">
+      {(isOpen || isFullScreen) && (
+        <div className="flex-1 flex flex-col min-h-0 bg-[#050505] p-2.5 scanline text-left">
           {/* Scrollable logs area */}
-          <div className="flex-1 overflow-y-auto mb-1.5 space-y-0.5 pr-1 text-[10px]">
+          <div className="flex-1 overflow-y-auto mb-2 space-y-0.5 pr-1 text-[10px]">
             {terminalLogs.map((log) => (
               <div key={log.id} className="flex gap-1.5 leading-snug">
                 <span className="text-text-secondary select-none">[{log.timestamp}]</span>
@@ -218,7 +249,7 @@ export function Terminal() {
           </div>
 
           {/* Interactive input bar */}
-          <form onSubmit={handleCommand} className="flex items-center border border-border bg-black/40 px-2 py-0.5 rounded">
+          <form onSubmit={handleCommand} className="flex items-center border border-border bg-black/40 px-2.5 py-1 rounded shrink-0">
             <span className="text-primary font-bold mr-1.5 select-none text-[10px]">ultron &gt;</span>
             <input 
               type="text" 

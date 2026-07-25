@@ -1,27 +1,39 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useSecurityStore } from '../../store/useSecurityStore';
+import { useSecurityStore, Repository } from '../../store/useSecurityStore';
 import { 
   FileText, 
   Download, 
-  Share2, 
-  CheckCircle, 
-  Info,
-  Calendar,
-  AlertTriangle,
-  FileJson,
-  FileCode,
-  Image as ImageIcon
+  Calendar, 
+  FileJson, 
+  FileCode, 
+  Image as ImageIcon 
 } from 'lucide-react';
+
+const defaultRepo: Repository = {
+  id: '',
+  name: 'No Repository Selected',
+  url: '',
+  language: 'N/A',
+  status: 'Clean',
+  score: 100,
+  criticalCount: 0,
+  highCount: 0,
+  mediumCount: 0,
+  lowCount: 0,
+  lastScanned: 'N/A',
+  filesCount: 0,
+  linesCount: 0
+};
 
 export default function ReportsPage() {
   const { findings, repositories, selectedRepoId } = useSecurityStore();
-  const [activeRepoId, setActiveRepoId] = useState(selectedRepoId || '1');
+  const [activeRepoId, setActiveRepoId] = useState(selectedRepoId || '');
   const [downloading, setDownloading] = useState<string | null>(null);
 
-  const activeRepo = repositories.find(r => r.id === activeRepoId) || repositories[0];
-  const repoFindings = findings.filter(f => f.repoId === activeRepoId);
+  const activeRepo = repositories.find(r => r.id === activeRepoId) || repositories[0] || defaultRepo;
+  const repoFindings = findings.filter(f => f.repoId === activeRepo.id);
 
   const criticalCount = repoFindings.filter(f => f.severity === 'Critical').length;
   const highCount = repoFindings.filter(f => f.severity === 'High').length;
@@ -29,6 +41,7 @@ export default function ReportsPage() {
   const lowCount = repoFindings.filter(f => f.severity === 'Low').length;
 
   const handleDownload = (format: string) => {
+    if (!activeRepo.id) return;
     setDownloading(format);
     setTimeout(() => {
       setDownloading(null);
@@ -62,9 +75,13 @@ export default function ReportsPage() {
             onChange={(e) => setActiveRepoId(e.target.value)}
             className="bg-black border border-border px-2.5 py-1.5 rounded text-white text-[10px] outline-none hover:border-primary/50 transition font-bold"
           >
-            {repositories.map(repo => (
-              <option key={repo.id} value={repo.id}>{repo.name}</option>
-            ))}
+            {repositories.length === 0 ? (
+              <option value="">No Repositories Available</option>
+            ) : (
+              repositories.map(repo => (
+                <option key={repo.id} value={repo.id}>{repo.name}</option>
+              ))
+            )}
           </select>
         </div>
       </div>
@@ -130,8 +147,8 @@ export default function ReportsPage() {
               {/* PDF */}
               <button 
                 onClick={() => handleDownload('PDF')}
-                disabled={downloading !== null}
-                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98"
+                disabled={downloading !== null || !activeRepo.id}
+                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98 disabled:opacity-40"
               >
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
@@ -143,8 +160,8 @@ export default function ReportsPage() {
               {/* JSON */}
               <button 
                 onClick={() => handleDownload('JSON')}
-                disabled={downloading !== null}
-                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98"
+                disabled={downloading !== null || !activeRepo.id}
+                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98 disabled:opacity-40"
               >
                 <div className="flex items-center gap-2">
                   <FileJson className="w-4 h-4 text-primary" />
@@ -156,8 +173,8 @@ export default function ReportsPage() {
               {/* Markdown */}
               <button 
                 onClick={() => handleDownload('MD')}
-                disabled={downloading !== null}
-                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98"
+                disabled={downloading !== null || !activeRepo.id}
+                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98 disabled:opacity-40"
               >
                 <div className="flex items-center gap-2">
                   <FileCode className="w-4 h-4 text-primary" />
@@ -169,8 +186,8 @@ export default function ReportsPage() {
               {/* SVG Call Graph */}
               <button 
                 onClick={() => handleDownload('SVG')}
-                disabled={downloading !== null}
-                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98"
+                disabled={downloading !== null || !activeRepo.id}
+                className="w-full border border-border hover:border-primary/50 bg-black/40 hover:bg-card px-4 py-3 rounded flex justify-between items-center text-white transition active:scale-98 disabled:opacity-40"
               >
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-primary" />

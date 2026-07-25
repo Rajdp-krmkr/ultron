@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { upsertUserOnLogin } from './users';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -24,11 +25,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Password must be at least 6 characters.');
         }
 
-        // Return authenticated email user session payload
+        const email = credentials.email.trim().toLowerCase();
+        const displayName = email.split('@')[0].toUpperCase();
+
+        // Save / update user in MongoDB database
+        const userDoc = await upsertUserOnLogin(email, displayName);
+
         return {
-          id: 'user-' + Math.random().toString(36).substring(7),
-          name: credentials.email.split('@')[0].toUpperCase(),
-          email: credentials.email,
+          id: userDoc._id ? String(userDoc._id) : 'user-' + Math.random().toString(36).substring(7),
+          name: userDoc.name || displayName,
+          email: userDoc.email,
+          role: userDoc.role || 'SEC_OFFICER',
           image: null
         };
       }
@@ -48,6 +55,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.role = (user as any).role || 'SEC_OFFICER';
       }
       return token;
     },
@@ -55,6 +63,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        (session.user as any).role = token.role as string;
+        (session.user as any).id = token.id as string;
       }
       return session;
     }
