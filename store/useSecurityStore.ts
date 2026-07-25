@@ -54,11 +54,43 @@ export interface Rule {
   recommendation: string;
 }
 
+export interface McpTool {
+  name: string;
+  description: string;
+  category: 'Repository' | 'Analysis' | 'Results' | 'Configuration';
+  parameters: string;
+}
+
 export interface McpClient {
   name: string;
   status: 'Connected' | 'Disconnected';
   lastSeen: string;
-  tools: { name: string; description: string; parameters: string }[];
+  tools: McpTool[];
+}
+
+export interface UltronConfig {
+  llm_mode: 'local' | 'cloud';
+  use_llm: boolean;
+  verbose: boolean;
+  visualise: boolean;
+  temperature: number;
+  max_tokens: number;
+  timeout: number;
+  num_workers: number;
+  llm_url: string;
+  enable_cache: boolean;
+  cache_only: boolean;
+  models: {
+    detector: string;
+    exploiter: string;
+    reporter: string;
+    default: string;
+  };
+  api_keys: {
+    groq: string;
+    gemini: string;
+    nvidia: string;
+  };
 }
 
 interface SecurityState {
@@ -74,15 +106,7 @@ interface SecurityState {
     currentStage: number;
     activeRepoId: string | null;
   };
-  settings: {
-    theme: string;
-    apiKey: string;
-    llmProvider: string;
-    workers: number;
-    timeout: number;
-    cacheEnabled: boolean;
-    visualGlow: boolean;
-  };
+  settings: UltronConfig;
   
   // Actions
   selectRepo: (id: string) => void;
@@ -91,7 +115,8 @@ interface SecurityState {
   startAnalysis: (repoUrl: string) => void;
   updateFindingStatus: (id: string, status: Finding['status']) => void;
   updateRuleStatus: (id: string, status: Rule['status']) => void;
-  updateSettings: (settings: Partial<SecurityState['settings']>) => void;
+  updateSettings: (settings: Partial<UltronConfig>) => void;
+  resetSettings: () => void;
 }
 
 // Initial Mock Repositories
@@ -123,11 +148,10 @@ const initialFindings: Finding[] = [
     sink: 'db.query(query) (line 9)',
     recommendation: 'Use parameterized queries or ORM syntax to avoid SQL injection vulnerability:\n\n```typescript\nconst query = "SELECT * FROM transactions WHERE description LIKE ?";\nconst results = await db.query(query, [`%${searchTerm}%`]);\n```',
     timeline: [
-      { time: '13:02:11', stage: 'AGENT_INIT', status: 'completed', description: 'ULTRON Security Agent spawned to verify SQL injection finding' },
-      { time: '13:02:12', stage: 'READ_FILE', status: 'completed', description: 'Read file transactionController.ts' },
-      { time: '13:02:13', stage: 'AST_SCAN', status: 'completed', description: 'Detected unparameterized DB call mapping back to Express Route parameter' },
-      { time: '13:02:14', stage: 'LLM_PROMPT', status: 'completed', description: 'Evaluating vulnerability context via GPT-4o Security Expert model' },
-      { time: '13:02:15', stage: 'FINISH', status: 'completed', description: 'Confirmed SQL Injection. Exploitation vector: Request parameters bypass sanitization.' }
+      { time: '13:02:11', stage: 'READ_FILE', status: 'completed', description: 'Read target file transactionController.ts' },
+      { time: '13:02:12', stage: 'READ_FUNCTION', status: 'completed', description: 'Extracted getTransactions function scope and call bindings' },
+      { time: '13:02:13', stage: 'RECORD_FACT', status: 'completed', description: 'Confirmed unparameterized DB call mapping to Express query argument' },
+      { time: '13:02:14', stage: 'FINISH', status: 'completed', description: 'Confirmed SQL Injection finding via agentic detector verification pass' }
     ]
   },
   {
@@ -148,9 +172,9 @@ const initialFindings: Finding[] = [
     sink: 'dangerouslySetInnerHTML (line 7)',
     recommendation: 'Sanitize comment input text before insertion using a library like DOMPurify, or avoid dangerouslySetInnerHTML entirely.',
     timeline: [
-      { time: '13:03:01', stage: 'AGENT_INIT', status: 'completed', description: 'ULTRON Security Agent spawned' },
-      { time: '13:03:02', stage: 'READ_FILE', status: 'completed', description: 'Read ProfileComments.tsx' },
-      { time: '13:03:03', stage: 'VERIFY', status: 'completed', description: 'Confirmed dangerouslySetInnerHTML is used without sanitization checks' }
+      { time: '13:03:01', stage: 'READ_FILE', status: 'completed', description: 'Read ProfileComments.tsx' },
+      { time: '13:03:02', stage: 'RECORD_FACT', status: 'completed', description: 'Confirmed dangerouslySetInnerHTML is used without sanitization checks' },
+      { time: '13:03:03', stage: 'FINISH', status: 'completed', description: 'Verified Stored XSS vulnerability vector' }
     ]
   },
   {
@@ -189,14 +213,14 @@ const initialFindings: Finding[] = [
     sink: 'Hardcoded config file definitions (line 5)',
     recommendation: 'Inject credentials at runtime using system environment variables (`process.env.AWS_SECRET_ACCESS_KEY`).',
     timeline: [
-      { time: '10:01:05', stage: 'AGENT_INIT', status: 'completed', description: 'ULTRON credentials scanner activated' },
-      { time: '10:01:06', stage: 'MATCH_ENTROPY', status: 'completed', description: 'Matched high entropy credentials sequence' },
-      { time: '10:01:07', stage: 'FINISH', status: 'completed', description: 'Confirmed secret leakage. Key structure matches IAM format.' }
+      { time: '10:01:05', stage: 'READ_FILE', status: 'completed', description: 'ULTRON credentials scanner read src/config/aws.ts' },
+      { time: '10:01:06', stage: 'RECORD_FACT', status: 'completed', description: 'Matched high entropy credentials sequence matching IAM format' },
+      { time: '10:01:07', stage: 'FINISH', status: 'completed', description: 'Confirmed secret leakage in repository config' }
     ]
   }
 ];
 
-// Initial Mock Rules
+// Initial Rules matching Ultron Engine
 const initialRules: Rule[] = [
   { id: 'SEC-SQL-01', name: 'SQL Injection Prevention', severity: 'Critical', confidence: 'High', status: 'Enabled', pattern: 'db\\.query\\(.*?\\+.*?\\)', description: 'Matches dynamic SQL queries concatenated directly with variable parameters.', recommendation: 'Use parameterized binding values instead.' },
   { id: 'SEC-XSS-02', name: 'Stored and Reflected XSS', severity: 'High', confidence: 'High', status: 'Enabled', pattern: 'dangerouslySetInnerHTML\\(.*?\\)', description: 'Matches direct HTML injection vectors that bypass React default escaping.', recommendation: 'Apply strict HTML sanitizers like DOMPurify.' },
@@ -205,36 +229,88 @@ const initialRules: Rule[] = [
   { id: 'SEC-LFI-12', name: 'Local File Inclusion (LFI)', severity: 'High', confidence: 'Medium', status: 'Enabled', pattern: 'fs\\.readFile\\(.*?req\\..*?\\)', description: 'Checks for reading files from dynamic request parameters without path validation.', recommendation: 'Apply strict whitelist of target filenames.' }
 ];
 
-// Initial MCP Client Information
+// Initial MCP Client Information reflecting Ultron 18 Tools
+const ultronToolsList: McpTool[] = [
+  { name: 'ultron_list_repos', description: 'List all cloned repositories with analysis status', category: 'Repository', parameters: '{}' },
+  { name: 'ultron_clone_repo', description: 'Clone a Git repo and run full security analysis', category: 'Repository', parameters: '{\n  "url": "string"\n}' },
+  { name: 'ultron_scan_repo', description: 'Re-run full analysis on an existing clone', category: 'Repository', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_get_repo_status', description: 'Detailed status: workspace, AST, graphs, remote URL', category: 'Repository', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_delete_repo', description: 'Delete a cloned repository and its workspace', category: 'Repository', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_visualise_repo', description: 'Regenerate dependency/taint/security SVGs from cached AST', category: 'Repository', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_run_detection', description: 'Detect languages and frameworks in repository', category: 'Analysis', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_run_ast_parse', description: 'Parse all source files into an AST using tree-sitter', category: 'Analysis', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_run_rules', description: 'Run deterministic rules (SQLi, path traversal, SSRF, etc.)', category: 'Analysis', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_run_llm_detection', description: 'Run LLM-powered vulnerability detection (agentic loop)', category: 'Analysis', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_run_full_analysis', description: 'Full pipeline: detection -> AST -> IR -> taint -> rules -> LLM', category: 'Analysis', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_get_findings', description: 'Get cached security findings from a previous scan', category: 'Results', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_get_security_graph', description: 'Get full cached security graph (flows, subgraphs, summary)', category: 'Results', parameters: '{\n  "name": "string"\n}' },
+  { name: 'ultron_get_config', description: 'Show full configuration (ultron_config.json)', category: 'Configuration', parameters: '{}' },
+  { name: 'ultron_set_config_value', description: 'Set a configuration value in ultron_config.json', category: 'Configuration', parameters: '{\n  "key": "string",\n  "value": "any"\n}' },
+  { name: 'ultron_set_model_override', description: 'Set LLM model for a specific agent role (detector/exploiter/reporter/default)', category: 'Configuration', parameters: '{\n  "role": "detector" | "exploiter" | "reporter" | "default",\n  "model": "string"\n}' },
+  { name: 'ultron_get_api_keys_status', description: 'Check which cloud API keys are configured (groq, gemini, nvidia)', category: 'Configuration', parameters: '{}' },
+  { name: 'ultron_reset_config', description: 'Reset configuration to factory defaults', category: 'Configuration', parameters: '{}' }
+];
+
 const initialMcpClients: McpClient[] = [
+  {
+    name: 'opencode',
+    status: 'Connected',
+    lastSeen: 'Just now',
+    tools: ultronToolsList
+  },
   {
     name: 'Claude Desktop',
     status: 'Connected',
-    lastSeen: '1 minute ago',
-    tools: [
-      { name: 'analyze_repository', description: 'Triggers Ultron AST & Taint engine to scan a repository', parameters: '{\n  "repo_url": "string"\n}' },
-      { name: 'get_findings', description: 'Retrieve findings matching target severity', parameters: '{\n  "severity": "Critical" | "High" | "Medium"\n}' }
-    ]
+    lastSeen: '2 minutes ago',
+    tools: ultronToolsList
   },
   {
     name: 'Cursor Editor',
     status: 'Connected',
-    lastSeen: 'Just now',
-    tools: [
-      { name: 'get_taint_path', description: 'Fetch React Flow node mappings for an active issue', parameters: '{\n  "finding_id": "string"\n}' },
-      { name: 'patch_vulnerability', description: 'Uses LLM to recommend a PR script fixing the issue', parameters: '{\n  "finding_id": "string"\n}' }
-    ]
+    lastSeen: '1 minute ago',
+    tools: ultronToolsList
+  },
+  {
+    name: 'VS Code (Copilot Agent)',
+    status: 'Connected',
+    lastSeen: '5 minutes ago',
+    tools: ultronToolsList
   }
 ];
+
+const defaultConfig: UltronConfig = {
+  llm_mode: 'local',
+  use_llm: true,
+  verbose: false,
+  visualise: false,
+  temperature: 0.1,
+  max_tokens: 512,
+  timeout: 30,
+  num_workers: 3,
+  llm_url: 'http://localhost:11434',
+  enable_cache: true,
+  cache_only: false,
+  models: {
+    detector: 'llama3.1:8b',
+    exploiter: 'llama3.1:8b',
+    reporter: 'llama3.1:8b',
+    default: 'llama3.1:8b'
+  },
+  api_keys: {
+    groq: 'gsk_...',
+    gemini: 'AI...',
+    nvidia: 'nvapi-...'
+  }
+};
 
 export const useSecurityStore = create<SecurityState>((set, get) => ({
   repositories: initialRepos,
   selectedRepoId: '1',
   findings: initialFindings,
   terminalLogs: [
-    { id: 'l1', timestamp: '12:58:47', type: 'info', message: 'ULTRON multi-agent platform initialized successfully.' },
-    { id: 'l2', timestamp: '12:58:50', type: 'success', message: 'Connected to local MCP daemon at http://localhost:8000.' },
-    { id: 'l3', timestamp: '12:58:52', type: 'info', message: 'Syncing repositories data... 5 workspaces indexed.' }
+    { id: 'l1', timestamp: '12:58:47', type: 'info', message: 'ULTRON security analysis engine initialized (v8b).' },
+    { id: 'l2', timestamp: '12:58:50', type: 'success', message: 'Connected to local MCP daemon at stdio / port 8743 (18 tools active).' },
+    { id: 'l3', timestamp: '12:58:52', type: 'info', message: 'Loaded ultron_config.json (mode: local, workers: 3).' }
   ],
   rules: initialRules,
   mcpClients: initialMcpClients,
@@ -244,15 +320,7 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
     currentStage: 0,
     activeRepoId: null
   },
-  settings: {
-    theme: 'cyberpunk',
-    apiKey: 'ultron_sec_********e5a2',
-    llmProvider: 'Google Gemini 1.5 Pro',
-    workers: 4,
-    timeout: 180,
-    cacheEnabled: true,
-    visualGlow: true
-  },
+  settings: defaultConfig,
 
   selectRepo: (id) => set({ selectedRepoId: id }),
 
@@ -302,21 +370,21 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
       }
     }));
 
-    get().addTerminalLog(`Initiated analysis on repo: ${repoUrl}`, 'command');
-    get().addTerminalLog(`Step 1/10: Cloning target repository ...`, 'info');
+    get().addTerminalLog(`ultron ${repoUrl}`, 'command');
+    get().addTerminalLog(`[1/6] Cloning repository...`, 'info');
 
-    // Simulate analysis timeline pipeline
+    // Pipeline matching Ultron architecture steps
     const pipelineStages = [
-      'Cloning target repository: github.com/ultron-sec/' + repoName,
-      'Executing Language Detection: TypeScript codebase resolved',
-      'AST Parsing initialized: compiling AST mappings in Monaco format',
-      'Intermediate Representation (IR) Pipeline: SSA statements generated',
-      'Building Call Graph: Resolving call boundaries and dependencies',
-      'Backward Taint Analysis: tracking user inputs propagation',
-      'Constructing Security Graph: Route-to-database interfaces loaded',
-      'Applying Rule Engine: Checking 5 active vulnerability signatures',
-      'LLM Verification initiated: analyzing suspicious sinks via agent',
-      'Report Generation: compilation complete.'
+      'Cloning repository via git subprocess',
+      'Phase 1 — AST Parsing: tree-sitter walking detected languages',
+      'Phase 2 — IR Pipeline: JS/TS CST -> IRModule with provenance edges',
+      'Phase 2 — Symbol Resolver & Call Graph: inter-procedural call resolution',
+      'Phase 2 — Taint Engine: backward propagation from sinks to sources',
+      'Phase 3 — Rules Engine: deterministic signature checks',
+      'Phase 3 — LLM Detector: agentic verification loop (READ_FILE/RECORD_FACT)',
+      'Phase 3 — Zero-Flow Scan fallback pass',
+      'Generating SVGs: dependency_graph.svg, taint_graph.svg, security_graph.svg',
+      'Scan complete. Findings compiled.'
     ];
 
     let currentStage = 0;
@@ -331,12 +399,11 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
           }
         }));
         
-        const type = currentStage === 8 ? 'warning' : 'info';
-        get().addTerminalLog(`Step ${currentStage + 1}/10: ${pipelineStages[currentStage]}`, type);
+        const type = currentStage === 6 ? 'warning' : 'info';
+        get().addTerminalLog(`[${currentStage + 1}/10] ${pipelineStages[currentStage]}`, type);
       } else {
         clearInterval(interval);
         
-        // Add dynamic mock finding to make it interactive!
         const newFindingId = 'f-' + Math.random().toString(36).substring(7);
         const generatedFinding: Finding = {
           id: newFindingId,
@@ -356,9 +423,10 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
           sink: 'client.execute(sql) (line 7)',
           recommendation: 'Use prepared statements or parameterized templates:\n\n```typescript\nawait client.execute("SELECT * FROM users WHERE id = ?", [id]);\n```',
           timeline: [
-            { time: '13:17:15', stage: 'AGENT_INIT', status: 'completed', description: 'Verification Agent started' },
-            { time: '13:17:16', stage: 'READ_FILE', status: 'completed', description: 'Read database.ts' },
-            { time: '13:17:17', stage: 'VERIFY', status: 'completed', description: 'Analyzed query parameter flow directly entering raw SQL execution.' }
+            { time: '13:17:15', stage: 'READ_FILE', status: 'completed', description: 'Read target file database.ts' },
+            { time: '13:17:16', stage: 'READ_FUNCTION', status: 'completed', description: 'Read function scope runQuery' },
+            { time: '13:17:17', stage: 'RECORD_FACT', status: 'completed', description: 'Confirmed unescaped query parameter flow entering raw SQL execution.' },
+            { time: '13:17:18', stage: 'FINISH', status: 'completed', description: 'Confirmed vulnerability via LLM agentic verification pass.' }
           ]
         };
 
@@ -388,9 +456,9 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
           };
         });
 
-        get().addTerminalLog(`Analysis complete. Finding f-SQLInjection written to database. Security Score updated to 54.`, 'success');
+        get().addTerminalLog(`Scan completed. Security score updated to 54. SVGs built successfully.`, 'success');
       }
-    }, 2000);
+    }, 1500);
   },
 
   updateFindingStatus: (id, status) => set((state) => ({
@@ -403,5 +471,7 @@ export const useSecurityStore = create<SecurityState>((set, get) => ({
 
   updateSettings: (newSettings) => set((state) => ({
     settings: { ...state.settings, ...newSettings }
-  }))
+  })),
+
+  resetSettings: () => set({ settings: defaultConfig })
 }));

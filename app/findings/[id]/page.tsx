@@ -62,7 +62,7 @@ export default function FindingDetails() {
   };
 
   return (
-    <div className="h-[calc(100vh-10rem)] flex flex-col font-mono text-xs relative">
+    <div className="min-h-[480px] flex flex-col font-mono text-xs space-y-4 relative">
       {/* Top action bar */}
       <div className="border border-border bg-surface p-3 rounded flex justify-between items-center mb-4 select-none shrink-0">
         <div className="flex items-center gap-4">

@@ -7,14 +7,11 @@ import {
   UploadCloud,
   FolderOpen,
   Play,
-  CheckCircle,
-  AlertTriangle,
   Clock,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  SearchCode
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
 
 export default function AnalyzeRepository() {
   const { startAnalysis, repositories, addTerminalLog } = useSecurityStore();
@@ -62,120 +59,151 @@ export default function AnalyzeRepository() {
   };
 
   return (
-    <div className="space-y-6 font-mono text-xs max-w-6xl mx-auto">
+    <div className="space-y-4 font-mono text-xs max-w-6xl mx-auto">
       {/* Banner */}
-      <div className="border border-border bg-surface p-4 rounded">
-        <h2 className="text-sm font-sans font-bold text-white tracking-widest uppercase mb-1">REPOSITORIES DEEP SECURITY AUDITING</h2>
-        <p className="text-text-secondary text-[10px]">Provide target packages to extract Abstract Syntax Trees (AST) and trace source-to-sink taint flows.</p>
+      <div className="border border-border bg-surface p-3 rounded flex items-center justify-between relative overflow-hidden">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-1.5">
+            <SearchCode className="w-3.5 h-3.5 text-primary" />
+            <h2 className="text-xs font-sans font-bold text-white tracking-widest uppercase">REPOSITORIES DEEP SECURITY AUDITING</h2>
+          </div>
+          <p className="text-text-secondary text-[10px]">Provide target packages to extract Abstract Syntax Trees (AST) and trace source-to-sink taint flows.</p>
+        </div>
+        <ShieldCheck className="w-7 h-7 text-primary/80 hidden sm:block shrink-0" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         {/* Left Side Inputs Form */}
-        <div className="md:col-span-2 space-y-4">
-          <div className="border border-border bg-surface rounded">
+        <div className="lg:col-span-2 space-y-3">
+          <div className="border border-border bg-surface rounded flex flex-col overflow-hidden">
             {/* Input tabs switcher */}
-            <div className="flex border-b border-border bg-black/30">
+            <div className="flex border-b border-border bg-black/40">
               <button
+                type="button"
                 onClick={() => setActiveTab('url')}
-                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${activeTab === 'url' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                  }`}
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                  activeTab === 'url' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
+                }`}
               >
-                GIT URL
+                <GitBranch className="w-3 h-3" />
+                <span>GIT URL</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('zip')}
-                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${activeTab === 'zip' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                  }`}
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 border-r border-border hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                  activeTab === 'zip' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
+                }`}
               >
-                UPLOAD ZIP
+                <UploadCloud className="w-3 h-3" />
+                <span>UPLOAD ZIP</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('local')}
-                className={`flex-1 py-3 text-center hover:text-white transition ${activeTab === 'local' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                  }`}
+                className={`flex-1 py-2.5 px-2 flex items-center justify-center gap-1.5 hover:text-white transition duration-150 font-bold tracking-wider text-[10px] ${
+                  activeTab === 'local' ? 'bg-card text-primary border-b-2 border-b-primary -mb-px' : 'text-text-secondary'
+                }`}
               >
-                LOCAL WORKSPACE
+                <FolderOpen className="w-3 h-3" />
+                <span>LOCAL WORKSPACE</span>
               </button>
             </div>
 
             {/* Input Form Fields */}
-            <form onSubmit={handleStartAnalysis} className="p-6 space-y-6">
-              {activeTab === 'url' && (
-                <div className="space-y-2">
-                  <label className="text-text-secondary block">GIT REPOSITORY REMOTE URL</label>
-                  <div className="flex border border-border bg-black rounded p-1 hover:border-primary/50 transition">
-                    <span className="px-3 flex items-center text-text-secondary border-r border-border"><GitBranch className="w-3.5 h-3.5" /></span>
-                    <input
-                      type="url"
-                      placeholder="https://github.com/org/repo-name.git"
-                      value={gitUrl}
-                      onChange={(e) => setGitUrl(e.target.value)}
-                      required={activeTab === 'url'}
-                      className="flex-1 bg-transparent border-0 outline-none px-3 text-white text-xs h-9 placeholder:text-[#555]"
-                    />
-                  </div>
-                  <span className="text-[10px] text-text-secondary">HTTPS or SSH paths accepted. Authentication credentials configured in Settings.</span>
-                </div>
-              )}
-
-              {activeTab === 'zip' && (
-                <div className="space-y-2">
-                  <label className="text-text-secondary block">UPLOAD COMPRESSED PROJECT ARCHIVE</label>
-                  <div
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                    className="border-2 border-dashed border-border bg-black hover:border-primary/50 transition rounded p-8 flex flex-col items-center justify-center cursor-pointer group text-center"
-                  >
-                    <UploadCloud className="w-8 h-8 text-text-secondary group-hover:text-primary mb-3 transition" />
-                    {zipFile ? (
-                      <div className="space-y-1">
-                        <span className="text-white font-bold block">{zipFile.name}</span>
-                        <span className="text-[10px] text-text-secondary block">{(zipFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <span className="text-white block">Drag and drop repository zip archive here</span>
-                        <span className="text-[10px] text-text-secondary block">or click to browse local files</span>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept=".zip"
-                      onChange={handleFileChange}
-                      required={activeTab === 'zip' && !zipFile}
-                      className="hidden"
-                      id="zip-upload-input"
-                    />
-                    <label htmlFor="zip-upload-input" className="mt-4 px-3 py-1.5 border border-border bg-card hover:border-primary transition rounded text-[10px] cursor-pointer">
-                      BROWSE FILE
+            <form onSubmit={handleStartAnalysis} className="p-4 flex flex-col justify-between space-y-4 min-h-[240px]">
+              <div className="space-y-3 flex-1">
+                {activeTab === 'url' && (
+                  <div className="space-y-1.5">
+                    <label className="text-text-secondary block font-bold text-[9px] tracking-wider uppercase">
+                      GIT REPOSITORY REMOTE URL
                     </label>
+                    <div className="flex border border-border bg-black rounded p-0.5 focus-within:border-primary/80 transition duration-150">
+                      <span className="px-2.5 flex items-center text-text-secondary border-r border-border">
+                        <GitBranch className="w-3 h-3" />
+                      </span>
+                      <input
+                        type="url"
+                        placeholder="https://github.com/org/repo-name.git"
+                        value={gitUrl}
+                        onChange={(e) => setGitUrl(e.target.value)}
+                        required={activeTab === 'url'}
+                        className="flex-1 bg-transparent border-0 outline-none px-2.5 text-white text-[11px] h-8 placeholder:text-[#555]"
+                      />
+                    </div>
+                    <span className="text-[9px] text-text-secondary block">
+                      HTTPS or SSH paths accepted. Authentication credentials configured in Settings.
+                    </span>
                   </div>
-                </div>
-              )}
+                )}
 
-              {activeTab === 'local' && (
-                <div className="space-y-2">
-                  <label className="text-text-secondary block">LOCAL SYSTEM DIRECTORY PATH</label>
-                  <div className="flex border border-border bg-black rounded p-1 hover:border-primary/50 transition">
-                    <span className="px-3 flex items-center text-text-secondary border-r border-border"><FolderOpen className="w-3.5 h-3.5" /></span>
-                    <input
-                      type="text"
-                      placeholder="C:\Users\username\projects\source-code"
-                      value={localFolder}
-                      onChange={(e) => setLocalFolder(e.target.value)}
-                      required={activeTab === 'local'}
-                      className="flex-1 bg-transparent border-0 outline-none px-3 text-white text-xs h-9 placeholder:text-[#555]"
-                    />
+                {activeTab === 'zip' && (
+                  <div className="space-y-1.5">
+                    <label className="text-text-secondary block font-bold text-[9px] tracking-wider uppercase">
+                      UPLOAD COMPRESSED PROJECT ARCHIVE
+                    </label>
+                    <div
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      className="border-2 border-dashed border-border bg-black hover:border-primary/50 transition duration-150 rounded p-4 flex flex-col items-center justify-center cursor-pointer group text-center"
+                    >
+                      <UploadCloud className="w-6 h-6 text-text-secondary group-hover:text-primary mb-1.5 transition duration-150" />
+                      {zipFile ? (
+                        <div className="space-y-0.5">
+                          <span className="text-white font-bold block text-[11px]">{zipFile.name}</span>
+                          <span className="text-[9px] text-text-secondary block">{(zipFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-0.5">
+                          <span className="text-white block text-[11px]">Drag & drop repository zip archive here</span>
+                          <span className="text-[9px] text-text-secondary block">or click to browse local files</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept=".zip"
+                        onChange={handleFileChange}
+                        required={activeTab === 'zip' && !zipFile}
+                        className="hidden"
+                        id="zip-upload-input"
+                      />
+                      <label htmlFor="zip-upload-input" className="mt-2.5 px-2.5 py-1 border border-border bg-card hover:border-primary transition rounded text-[9px] cursor-pointer">
+                        BROWSE FILE
+                      </label>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-text-secondary">Direct file access matching system daemon index bindings.</span>
-                </div>
-              )}
+                )}
+
+                {activeTab === 'local' && (
+                  <div className="space-y-1.5">
+                    <label className="text-text-secondary block font-bold text-[9px] tracking-wider uppercase">
+                      LOCAL SYSTEM DIRECTORY PATH
+                    </label>
+                    <div className="flex border border-border bg-black rounded p-0.5 focus-within:border-primary/80 transition duration-150">
+                      <span className="px-2.5 flex items-center text-text-secondary border-r border-border">
+                        <FolderOpen className="w-3 h-3" />
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="C:\Users\username\projects\source-code"
+                        value={localFolder}
+                        onChange={(e) => setLocalFolder(e.target.value)}
+                        required={activeTab === 'local'}
+                        className="flex-1 bg-transparent border-0 outline-none px-2.5 text-white text-[11px] h-8 placeholder:text-[#555]"
+                      />
+                    </div>
+                    <span className="text-[9px] text-text-secondary block">
+                      Direct file access matching system daemon index bindings.
+                    </span>
+                  </div>
+                )}
+              </div>
 
               <button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-3 rounded border border-transparent shadow-[0_0_15px_rgba(255,32,32,0.3)] transition flex items-center justify-center gap-2 active:scale-95"
+                className="w-full bg-primary hover:bg-primary-hover text-white text-[11px] font-bold py-2.5 rounded border border-transparent shadow-[0_0_12px_rgba(255,32,32,0.25)] transition flex items-center justify-center gap-2 active:scale-[0.99] cursor-pointer"
               >
-                <Play className="w-4 h-4 fill-current" />
+                <Play className="w-3.5 h-3.5 fill-current" />
                 INITIATE ENGINE SECURITY SCAN
               </button>
             </form>
@@ -183,49 +211,61 @@ export default function AnalyzeRepository() {
         </div>
 
         {/* Right Side Scan History logs list */}
-        <div className="space-y-4">
-          <div className="border border-border bg-surface p-4 rounded space-y-4">
-            <h3 className="font-sans font-bold text-white tracking-widest text-[10px] uppercase border-b border-border pb-2">
-              RECENT ANALYSIS JOBS
-            </h3>
+        <div className="space-y-3">
+          <div className="border border-border bg-surface p-3 rounded space-y-3 flex flex-col min-h-[300px]">
+            <div className="flex items-center justify-between border-b border-border pb-2">
+              <h3 className="font-sans font-bold text-white tracking-widest text-[9px] uppercase flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-primary" />
+                RECENT ANALYSIS JOBS
+              </h3>
+              <span className="text-[9px] text-text-secondary font-mono">{repositories.length} TOTAL</span>
+            </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 flex-1 overflow-y-auto max-h-[280px] pr-1">
               {repositories.map((repo, idx) => (
-                <div key={idx} className="border border-border bg-black/30 p-3 rounded space-y-2 relative overflow-hidden">
+                <div key={idx} className="border border-border bg-black/40 p-2.5 rounded space-y-1.5 relative overflow-hidden hover:border-primary/40 transition duration-150">
                   {/* Status header indicator */}
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-white truncate max-w-[130px]">{repo.name}</span>
-                    <span className={`inline-flex items-center gap-1 text-[9px] ${repo.status === 'Clean' ? 'text-success' :
-                        repo.status === 'Scanning' ? 'text-medium animate-pulse' :
-                          'text-critical'
-                      }`}>
-                      {repo.status === 'Clean' ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                    <span className="font-bold text-white truncate max-w-[120px] text-[11px]">{repo.name}</span>
+                    <span className={`inline-flex items-center gap-1 text-[8px] px-1.5 py-0.5 rounded border ${
+                      repo.status === 'Clean' ? 'text-success bg-success/10 border-success/30' :
+                      repo.status === 'Scanning' ? 'text-medium bg-medium/10 border-medium/30 animate-pulse' :
+                      'text-critical bg-critical/10 border-critical/30'
+                    }`}>
+                      {repo.status === 'Clean' ? <ShieldCheck className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
                       {repo.status}
                     </span>
                   </div>
 
                   {/* Details stats */}
-                  <div className="grid grid-cols-2 gap-1.5 text-[9px] text-text-secondary">
+                  <div className="grid grid-cols-2 gap-1 text-[9px] text-text-secondary">
                     <div>Issues: <span className="text-white font-bold">{repo.criticalCount + repo.highCount}</span></div>
                     <div>Score: <span className="text-white font-bold">{repo.score}/100</span></div>
                     <div className="col-span-2">Time: {repo.lastScanned}</div>
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-2 border-t border-border/50 flex justify-between items-center text-[9px]">
+                  <div className="pt-1.5 border-t border-border/50 flex justify-between items-center text-[9px]">
                     <span className="text-text-secondary">{repo.language}</span>
                     <button
+                      type="button"
                       onClick={() => {
                         startAnalysis(repo.url);
                         window.open('/pipeline', '_blank');
                       }}
-                      className="text-primary hover:underline flex items-center gap-0.5"
+                      className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
                     >
                       Re-run <ExternalLink className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 </div>
               ))}
+
+              {repositories.length === 0 && (
+                <div className="text-center py-6 text-text-secondary text-[10px]">
+                  No recent analysis jobs found.
+                </div>
+              )}
             </div>
           </div>
         </div>

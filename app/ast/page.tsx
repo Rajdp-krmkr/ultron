@@ -129,7 +129,7 @@ export default function ASTExplorer() {
   };
 
   return (
-    <div className="h-[calc(100vh-10rem)] flex flex-col font-mono text-xs">
+    <div className="min-h-[480px] flex flex-col font-mono text-xs space-y-4">
       {/* Top Banner */}
       <div className="border border-border bg-surface p-3 rounded flex justify-between items-center mb-4 select-none shrink-0">
         <div className="flex items-center gap-2">

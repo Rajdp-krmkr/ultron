@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
+    "@next/swc-wasm-nodejs": "^16.2.11",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.26.0",
     "mongodb": "^7.5.0",
