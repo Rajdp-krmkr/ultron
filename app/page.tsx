@@ -211,7 +211,7 @@ export default function LandingPage() {
                 ANALYZE REPOSITORY <ChevronRight className="w-3.5 h-3.5" />
               </Link>
               <Link 
-                href="/dashboard" 
+                href="/login" 
                 className="inline-flex items-center gap-2 border border-border bg-black/60 hover:bg-card text-white text-xs px-5 py-3 rounded hover:border-primary/50 transition-all duration-150"
               >
                 ENTER SOC DASHBOARD <ArrowRight className="w-3.5 h-3.5 text-primary" />

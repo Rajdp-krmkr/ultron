@@ -30,8 +30,8 @@ export default function RootLayout({
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // If on landing page, display fullscreen content without dashboard sidebar/navbar
-  const isLandingPage = pathname === '/';
+  // If on landing/login page, display fullscreen content without dashboard sidebar/navbar
+  const isLandingPage = pathname === '/' || pathname === '/login';
 
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} dark`}>
