@@ -19,7 +19,8 @@ import { useRouter } from 'next/navigation';
 
 export default function FindingsDashboard() {
   const router = useRouter();
-  const { findings, repositories } = useSecurityStore();
+  const { findings, repositories, selectedRepoId } = useSecurityStore();
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [searchTerm, setSearchTerm] = useState('');
   const [sevFilter, setSevFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -51,7 +52,7 @@ export default function FindingsDashboard() {
       (verifiedFilter === 'Verified' && finding.verifiedByLlm) || 
       (verifiedFilter === 'Unverified' && !finding.verifiedByLlm);
 
-    return matchesSearch && matchesSev && matchesStatus && matchesVerified;
+    return matchesSearch && matchesSev && matchesStatus && matchesVerified && finding.repoId === selectedRepoId;
   });
 
   return (
@@ -61,6 +62,9 @@ export default function FindingsDashboard() {
         <div className="space-y-0.5">
           <h2 className="text-sm font-sans font-bold text-white tracking-widest uppercase">SECURITY FINDINGS AUDIT LAB</h2>
           <p className="text-text-secondary text-[10px]">Filter, review, and patch security vulnerabilities confirmed by multi-agent analysis.</p>
+          {activeRepo && (
+            <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+          )}
         </div>
 
         <div className="flex gap-2 border border-border rounded bg-black/40 p-0.5">

@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import { useSecurityStore } from '../../store/useSecurityStore';
-import { 
-  GitBranch, 
-  UploadCloud, 
-  FolderOpen, 
-  Play, 
+import {
+  GitBranch,
+  UploadCloud,
+  FolderOpen,
+  Play,
   CheckCircle,
   AlertTriangle,
   Clock,
@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+
 export default function AnalyzeRepository() {
-  const router = useRouter();
   const { startAnalysis, repositories, addTerminalLog } = useSecurityStore();
   const [gitUrl, setGitUrl] = useState('');
   const [activeTab, setActiveTab] = useState<'url' | 'zip' | 'local'>('url');
@@ -39,7 +39,7 @@ export default function AnalyzeRepository() {
     }
 
     startAnalysis(target);
-    router.push('/pipeline');
+    window.open('/pipeline', '_blank');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +62,7 @@ export default function AnalyzeRepository() {
   };
 
   return (
-    <div className="space-y-6 font-mono text-xs max-w-4xl mx-auto">
+    <div className="space-y-6 font-mono text-xs max-w-6xl mx-auto">
       {/* Banner */}
       <div className="border border-border bg-surface p-4 rounded">
         <h2 className="text-sm font-sans font-bold text-white tracking-widest uppercase mb-1">REPOSITORIES DEEP SECURITY AUDITING</h2>
@@ -75,27 +75,24 @@ export default function AnalyzeRepository() {
           <div className="border border-border bg-surface rounded">
             {/* Input tabs switcher */}
             <div className="flex border-b border-border bg-black/30">
-              <button 
+              <button
                 onClick={() => setActiveTab('url')}
-                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${
-                  activeTab === 'url' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                }`}
+                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${activeTab === 'url' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
+                  }`}
               >
                 GIT URL
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('zip')}
-                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${
-                  activeTab === 'zip' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                }`}
+                className={`flex-1 py-3 text-center border-r border-border hover:text-white transition ${activeTab === 'zip' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
+                  }`}
               >
                 UPLOAD ZIP
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('local')}
-                className={`flex-1 py-3 text-center hover:text-white transition ${
-                  activeTab === 'local' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
-                }`}
+                className={`flex-1 py-3 text-center hover:text-white transition ${activeTab === 'local' ? 'bg-card text-primary font-bold border-b-2 border-b-primary' : 'text-text-secondary'
+                  }`}
               >
                 LOCAL WORKSPACE
               </button>
@@ -108,8 +105,8 @@ export default function AnalyzeRepository() {
                   <label className="text-text-secondary block">GIT REPOSITORY REMOTE URL</label>
                   <div className="flex border border-border bg-black rounded p-1 hover:border-primary/50 transition">
                     <span className="px-3 flex items-center text-text-secondary border-r border-border"><GitBranch className="w-3.5 h-3.5" /></span>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       placeholder="https://github.com/org/repo-name.git"
                       value={gitUrl}
                       onChange={(e) => setGitUrl(e.target.value)}
@@ -124,7 +121,7 @@ export default function AnalyzeRepository() {
               {activeTab === 'zip' && (
                 <div className="space-y-2">
                   <label className="text-text-secondary block">UPLOAD COMPRESSED PROJECT ARCHIVE</label>
-                  <div 
+                  <div
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     className="border-2 border-dashed border-border bg-black hover:border-primary/50 transition rounded p-8 flex flex-col items-center justify-center cursor-pointer group text-center"
@@ -141,8 +138,8 @@ export default function AnalyzeRepository() {
                         <span className="text-[10px] text-text-secondary block">or click to browse local files</span>
                       </div>
                     )}
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept=".zip"
                       onChange={handleFileChange}
                       required={activeTab === 'zip' && !zipFile}
@@ -161,8 +158,8 @@ export default function AnalyzeRepository() {
                   <label className="text-text-secondary block">LOCAL SYSTEM DIRECTORY PATH</label>
                   <div className="flex border border-border bg-black rounded p-1 hover:border-primary/50 transition">
                     <span className="px-3 flex items-center text-text-secondary border-r border-border"><FolderOpen className="w-3.5 h-3.5" /></span>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="C:\Users\username\projects\source-code"
                       value={localFolder}
                       onChange={(e) => setLocalFolder(e.target.value)}
@@ -198,11 +195,10 @@ export default function AnalyzeRepository() {
                   {/* Status header indicator */}
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-white truncate max-w-[130px]">{repo.name}</span>
-                    <span className={`inline-flex items-center gap-1 text-[9px] ${
-                      repo.status === 'Clean' ? 'text-success' : 
-                      repo.status === 'Scanning' ? 'text-medium animate-pulse' :
-                      'text-critical'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1 text-[9px] ${repo.status === 'Clean' ? 'text-success' :
+                        repo.status === 'Scanning' ? 'text-medium animate-pulse' :
+                          'text-critical'
+                      }`}>
                       {repo.status === 'Clean' ? <ShieldCheck className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       {repo.status}
                     </span>
@@ -218,10 +214,10 @@ export default function AnalyzeRepository() {
                   {/* Actions */}
                   <div className="pt-2 border-t border-border/50 flex justify-between items-center text-[9px]">
                     <span className="text-text-secondary">{repo.language}</span>
-                    <button 
+                    <button
                       onClick={() => {
                         startAnalysis(repo.url);
-                        router.push('/pipeline');
+                        window.open('/pipeline', '_blank');
                       }}
                       className="text-primary hover:underline flex items-center gap-0.5"
                     >

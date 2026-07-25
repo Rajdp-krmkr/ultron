@@ -35,7 +35,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} dark`}>
-      <body className="antialiased bg-background text-text-primary min-h-screen flex flex-col overflow-hidden">
+      <body className="antialiased bg-background text-text-primary min-h-screen flex flex-col">
         {isLandingPage ? (
           <main className="flex-1 flex flex-col overflow-y-auto">
             {children}

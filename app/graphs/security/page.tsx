@@ -65,6 +65,8 @@ const initialEdges = [
 ];
 
 export default function SecurityGraphPage() {
+  const { repositories, selectedRepoId } = useSecurityStore();
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<any>(null);
@@ -87,6 +89,9 @@ export default function SecurityGraphPage() {
           <div className="space-y-0.5">
             <h2 className="text-white font-sans font-bold text-xs tracking-wider uppercase">SECURITY TOPOLOGY GRAPH</h2>
             <p className="text-[10px] text-text-secondary">Overview mapping database partitions, security boundaries, and routes controller linkages.</p>
+            {activeRepo && (
+              <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+            )}
           </div>
         </div>
       </div>

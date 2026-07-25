@@ -72,7 +72,8 @@ const initialEdges = [
 ];
 
 export default function TaintGraphPage() {
-  const { findings } = useSecurityStore();
+  const { findings, repositories, selectedRepoId } = useSecurityStore();
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<any>(null);
@@ -106,6 +107,9 @@ export default function TaintGraphPage() {
           <div className="space-y-0.5">
             <h2 className="text-white font-sans font-bold text-xs tracking-wider uppercase">DYNAMIC TAINT FLOW PLOTTER</h2>
             <p className="text-[10px] text-text-secondary">Interactive map of parameters propagation and boundary sanitizations.</p>
+            {activeRepo && (
+              <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+            )}
           </div>
         </div>
 

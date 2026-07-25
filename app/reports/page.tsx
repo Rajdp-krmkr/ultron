@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 
 export default function ReportsPage() {
-  const { findings, repositories } = useSecurityStore();
-  const [activeRepoId, setActiveRepoId] = useState('1');
+  const { findings, repositories, selectedRepoId } = useSecurityStore();
+  const [activeRepoId, setActiveRepoId] = useState(selectedRepoId || '1');
   const [downloading, setDownloading] = useState<string | null>(null);
 
   const activeRepo = repositories.find(r => r.id === activeRepoId) || repositories[0];

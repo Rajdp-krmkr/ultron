@@ -11,6 +11,7 @@ import {
   Info
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { useSecurityStore } from '../../store/useSecurityStore';
 
 interface IRStatement {
   instruction: string;
@@ -20,6 +21,8 @@ interface IRStatement {
 }
 
 export default function IRExplorer() {
+  const { repositories, selectedRepoId } = useSecurityStore();
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [activeFunc, setActiveFunc] = useState('getTransactionDetails');
   const [selectedIR, setSelectedIR] = useState<IRStatement | null>(null);
 
@@ -52,6 +55,9 @@ export default function IRExplorer() {
           <div className="space-y-0.5">
             <h2 className="text-white font-sans font-bold text-xs tracking-wider uppercase">SSA IR INTERMEDIATE REPRESENTATION</h2>
             <p className="text-[10px] text-text-secondary">Inspect compiler Three-Address Codes (3AC) and Static Single Assignment statements.</p>
+            {activeRepo && (
+              <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+            )}
           </div>
         </div>
       </div>

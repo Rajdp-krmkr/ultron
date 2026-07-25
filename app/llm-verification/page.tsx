@@ -16,8 +16,9 @@ import {
 } from 'lucide-react';
 
 export default function LlmVerification() {
-  const { findings, repositories } = useSecurityStore();
-  const verifiedFindings = findings.filter(f => f.verifiedByLlm);
+  const { findings, repositories, selectedRepoId } = useSecurityStore();
+  const verifiedFindings = findings.filter(f => f.verifiedByLlm && f.repoId === selectedRepoId);
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [activeJobId, setActiveJobId] = useState(verifiedFindings[0]?.id || 'f-101');
 
   const selectedFinding = findings.find(f => f.id === activeJobId);
@@ -30,6 +31,9 @@ export default function LlmVerification() {
         <div className="space-y-0.5">
           <h2 className="text-sm font-sans font-bold text-white tracking-widest uppercase">AUTONOMOUS LLM VERIFICATION RUNS</h2>
           <p className="text-text-secondary text-[10px]">Inspect agent prompts and reasoning timelines that weed out false positives.</p>
+          {activeRepo && (
+            <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 border border-border bg-black/40 px-3 py-1.5 rounded text-success">

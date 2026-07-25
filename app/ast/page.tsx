@@ -11,6 +11,7 @@ import {
   Info
 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { useSecurityStore } from '../../store/useSecurityStore';
 
 // AST Node interface
 interface ASTNode {
@@ -21,6 +22,8 @@ interface ASTNode {
 }
 
 export default function ASTExplorer() {
+  const { repositories, selectedRepoId } = useSecurityStore();
+  const activeRepo = repositories.find(r => r.id === selectedRepoId);
   const [activeFile, setActiveFile] = useState('server.ts');
   const [selectedASTNode, setSelectedASTNode] = useState<ASTNode | null>(null);
   const [editorLoaded, setEditorLoaded] = useState(false);
@@ -134,6 +137,9 @@ export default function ASTExplorer() {
           <div className="space-y-0.5">
             <h2 className="text-white font-sans font-bold text-xs tracking-wider uppercase">COMPILER AST EXPLORER</h2>
             <p className="text-[10px] text-text-secondary">Inspect abstract syntax trees generated during source file parses.</p>
+            {activeRepo && (
+              <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
+            )}
           </div>
         </div>
       </div>
