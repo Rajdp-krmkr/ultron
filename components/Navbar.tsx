@@ -2,24 +2,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSecurityStore } from '../store/useSecurityStore';
+import { useSession, signOut } from 'next-auth/react';
 import { 
   Bell, 
   Cpu, 
   Activity, 
-  Network, 
   User, 
   Database,
   ChevronsUpDown,
-  Zap,
-  Globe
+  Globe,
+  LogOut
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
   const { repositories, selectedRepoId, selectRepo, addTerminalLog, settings } = useSecurityStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [systemTime, setSystemTime] = useState('13:00:00');
 
   useEffect(() => {
@@ -41,6 +44,14 @@ export function Navbar() {
     { id: 2, title: 'MCP Tool Request', body: 'Cursor Client invoked ultron_get_security_graph tool.', time: '12m ago' },
     { id: 3, title: 'Zero-Flow Pass', body: 'Agentic general scan completed with zero taint paths.', time: '1h ago' }
   ];
+
+  const userEmail = session?.user?.email || 'operator@ultron.io';
+  const userName = session?.user?.name || userEmail.split('@')[0].toUpperCase();
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    router.push('/login');
+  };
 
   return (
     <header className="h-12 border-b border-border bg-surface text-white flex items-center justify-between px-4 z-20 select-none shrink-0 sticky top-0">
@@ -154,12 +165,34 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Profile / Agent tag */}
-        <div className="flex items-center gap-1.5 border border-border bg-black/30 hover:border-primary transition duration-150 px-2 py-1 rounded cursor-pointer">
-          <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center border border-primary">
-            <User className="w-2.5 h-2.5 text-primary" />
+        {/* Profile / NextAuth user dropdown */}
+        <div className="relative">
+          <div 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-1.5 border border-border bg-black/30 hover:border-primary transition duration-150 px-2 py-1 rounded cursor-pointer"
+          >
+            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center border border-primary">
+              <User className="w-2.5 h-2.5 text-primary" />
+            </div>
+            <span className="hidden md:inline font-mono text-[10px] text-white truncate max-w-[110px]">{userName}</span>
           </div>
-          <span className="hidden md:inline font-mono text-[10px] text-white">ULTRON_CLI</span>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-1.5 w-56 border border-border bg-surface rounded shadow-xl z-50 text-left p-2 space-y-2">
+              <div className="border-b border-border pb-1.5">
+                <div className="text-[10px] font-bold text-white font-mono truncate">{userEmail}</div>
+                <div className="text-[8px] text-text-secondary font-mono">NEXT-AUTH SESSION</div>
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full text-left px-2 py-1.5 hover:bg-card hover:text-primary transition rounded flex items-center gap-2 text-xs font-mono text-critical"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

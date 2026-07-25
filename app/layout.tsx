@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Sidebar } from '../components/Sidebar';
 import { Navbar } from '../components/Navbar';
 import { Terminal } from '../components/Terminal';
+import { AuthProvider } from '../components/AuthProvider';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -36,30 +37,32 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} dark`}>
       <body className="antialiased bg-background text-text-primary h-screen w-screen overflow-hidden flex flex-col">
-        {isLandingPage ? (
-          <main className="flex-1 flex flex-col overflow-y-auto">
-            {children}
-          </main>
-        ) : (
-          <div className="flex h-screen w-screen overflow-hidden">
-            {/* Fixed Sidebar (Non-scrolling layout root) */}
-            <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+        <AuthProvider>
+          {isLandingPage ? (
+            <main className="flex-1 flex flex-col overflow-y-auto">
+              {children}
+            </main>
+          ) : (
+            <div className="flex h-screen w-screen overflow-hidden">
+              {/* Fixed Sidebar */}
+              <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
 
-            {/* Main Application Container */}
-            <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-[#0A0A0A] relative">
-              {/* Fixed Top Navbar */}
-              <Navbar />
+              {/* Main Application Container */}
+              <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-[#0A0A0A] relative">
+                {/* Fixed Top Navbar */}
+                <Navbar />
 
-              {/* ONLY THIS SCROLLS: Main Page Viewport */}
-              <main className="flex-1 overflow-y-auto p-4 md:p-5 min-h-0 bg-background relative scrollbar-thin">
-                {children}
-              </main>
+                {/* ONLY THIS SCROLLS: Main Page Viewport */}
+                <main className="flex-1 overflow-y-auto p-4 md:p-5 min-h-0 bg-background relative scrollbar-thin">
+                  {children}
+                </main>
 
-              {/* Fixed Bottom Docked Terminal */}
-              <Terminal />
+                {/* Fixed Bottom Docked Terminal */}
+                <Terminal />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </AuthProvider>
       </body>
     </html>
   );

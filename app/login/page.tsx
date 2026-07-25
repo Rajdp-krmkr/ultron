@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Mail, Lock, ShieldAlert, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
@@ -55,15 +56,35 @@ export default function LoginPage() {
     return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim()) { setError('Email is required.'); return; }
+
+    if (!email.trim()) { setError('Email address is required.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address.'); return; }
     if (!password.trim()) { setError('Password is required.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Enter a valid email address.'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+
     setIsLoading(true);
-    setTimeout(() => { setIsLoading(false); router.push('/dashboard'); }, 1800);
+
+    try {
+      const res = await signIn('email-auth', {
+        email: email.trim(),
+        password: password,
+        redirect: false,
+        callbackUrl: '/dashboard'
+      });
+
+      if (res?.error) {
+        setError(res.error);
+        setIsLoading(false);
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Authentication failed. Please check credentials.');
+      setIsLoading(false);
+    }
   };
 
   const emailCls = `flex items-center border rounded transition-all duration-200 ${focusedField === 'email' ? 'border-primary bg-black shadow-[0_0_8px_rgba(255,32,32,0.15)]' : 'border-border bg-black/60'}`;
@@ -83,8 +104,8 @@ export default function LoginPage() {
           <span className="font-sans font-bold tracking-widest text-white text-sm neon-text-red">ULTRON</span>
         </div>
         <div className="ml-auto flex items-center gap-2 text-[10px] font-mono text-text-secondary">
-          <span className="border border-border px-2 py-0.5 rounded bg-black/30">MCP_SERVER: ONLINE</span>
-          <span className="border border-border px-2 py-0.5 rounded bg-black/30">VERSION: 2.1.0</span>
+          <span className="border border-border px-2 py-0.5 rounded bg-black/30">NEXT_AUTH: EMAIL ONLY</span>
+          <span className="border border-border px-2 py-0.5 rounded bg-black/30">TLS 1.3</span>
         </div>
       </header>
 
@@ -98,13 +119,13 @@ export default function LoginPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded border border-primary/40 bg-primary/5 shadow-[0_0_20px_rgba(255,32,32,0.15)] mb-1">
                 <ShieldAlert className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="font-sans font-bold text-xl tracking-widest text-white uppercase">Secure Access</h1>
-              <p className="text-text-secondary text-[11px] font-mono">ULTRON PLATFORM - AUTH GATEWAY</p>
+              <h1 className="font-sans font-bold text-xl tracking-widest text-white uppercase">Email Authentication</h1>
+              <p className="text-text-secondary text-[11px] font-mono">NEXTAUTH.JS - EMAIL AUTH GATEWAY</p>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-[9px] font-mono text-text-secondary tracking-widest">CREDENTIALS</span>
+              <span className="text-[9px] font-mono text-text-secondary tracking-widest">EMAIL CREDENTIALS</span>
               <div className="flex-1 h-px bg-border" />
             </div>
 
@@ -146,7 +167,7 @@ export default function LoginPage() {
                     onChange={(e) => { setPassword(e.target.value); setError(''); }}
                     onFocus={() => setFocusedField('password')}
                     onBlur={() => setFocusedField(null)}
-                    placeholder="Enter your password"
+                    placeholder="Enter password (min. 6 chars)"
                     autoComplete="current-password"
                     className="flex-1 bg-transparent border-0 outline-none px-3 py-3 text-white text-xs font-mono placeholder:text-[#444]"
                   />
@@ -173,7 +194,7 @@ export default function LoginPage() {
                 id="login-submit"
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold font-mono py-3.5 rounded shadow-[0_0_15px_rgba(255,32,32,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 tracking-widest uppercase mt-2"
+                className="w-full bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold font-mono py-3.5 rounded shadow-[0_0_15px_rgba(255,32,32,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 tracking-widest uppercase mt-2 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -182,7 +203,7 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    ACCESS PLATFORM
+                    SIGN IN WITH EMAIL
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -190,7 +211,7 @@ export default function LoginPage() {
             </form>
 
             <p className="text-center text-[9px] font-mono text-text-secondary/60 tracking-wider">
-              ENCRYPTED - TLS 1.3 - ZERO-TRUST AUTH
+              NEXT-AUTH EMAIL PROVIDER - JWT SESSION
             </p>
           </div>
         </div>
