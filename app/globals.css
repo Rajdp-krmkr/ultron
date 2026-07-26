@@ -24,6 +24,10 @@
   --foreground: #FFFFFF;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: #050505;
   color: #FFFFFF;
@@ -58,7 +62,6 @@ body {
 /* Scanline Animation */
 .scanline {
   position: relative;
-  overflow: hidden;
 }
 .scanline::after {
   content: " ";

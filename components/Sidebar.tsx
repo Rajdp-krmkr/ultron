@@ -9,7 +9,6 @@ import {
   GitFork, 
   AlertTriangle, 
   FileText, 
-  Settings as SettingsIcon,
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
@@ -27,8 +26,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     { name: 'Analyze Repository', icon: SearchCode, path: '/analyze' },
     { name: 'Pipeline', icon: GitFork, path: '/pipeline' },
     { name: 'Findings', icon: AlertTriangle, path: '/findings' },
-    { name: 'Reports', icon: FileText, path: '/reports' },
-    { name: 'Settings', icon: SettingsIcon, path: '/settings' }
+    { name: 'Reports', icon: FileText, path: '/reports' }
   ];
 
   return (

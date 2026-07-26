@@ -16,7 +16,15 @@ import {
   Binary,
   User,
   LogOut,
-  Globe
+  Globe,
+  Laptop,
+  Server,
+  TerminalSquare,
+  CheckCircle2,
+  ExternalLink,
+  Wrench,
+  Sparkles,
+  GitPullRequest
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -142,15 +150,11 @@ export default function LandingPage() {
     };
   }, []);
 
-  const handleMcpAlert = () => {
-    alert(
-      "ULTRON FAST-MCP SERVER\n\n" +
-      "Start stdio transport for Desktop MCP Clients:\n" +
-      "python routes/mcp_server.py\n\n" +
-      "Start SSE transport for Web MCP Clients:\n" +
-      "python routes/mcp_server.py --sse --port 8743\n\n" +
-      "Exposes 18 Security Tools directly to opencode, Claude Desktop, Cursor, and VS Code."
-    );
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const features = [
@@ -165,16 +169,38 @@ export default function LandingPage() {
     { icon: Lock, title: 'MCP Server', desc: 'Seamlessly exposes codebase scanning tools directly to Claude Desktop and Cursor.' }
   ];
 
+  const cliCommands = [
+    { cmd: 'ultron <url>', desc: 'Clone a repository and run full security analysis' },
+    { cmd: 'ultron scan <name-or-path> [--fix]', desc: 'Run analysis on existing repo or local folder (pass --fix to invoke LLM Auto-Fixer)' },
+    { cmd: 'ultron install-hook [dir]', desc: 'Install built-in Git pre-commit security hook into .git/hooks/pre-commit' },
+    { cmd: 'ultron list', desc: 'List all cloned repositories' },
+    { cmd: 'ultron delete <name>', desc: 'Delete a cloned repository and workspace' },
+    { cmd: 'ultron visualise <name>', desc: 'Build & open dependency/taint/security SVGs' },
+    { cmd: 'ultron config', desc: 'Show current engine configuration' }
+  ];
+
+  const mcpToolsList = [
+    { tool: 'ultron_list_repos', category: 'Repository', desc: 'List all cloned repositories with analysis status' },
+    { tool: 'ultron_clone_repo', category: 'Repository', desc: 'Clone a Git repo and run full security analysis' },
+    { tool: 'ultron_scan_repo', category: 'Repository', desc: 'Re-run full analysis on an existing clone' },
+    { tool: 'ultron_run_ast_parse', category: 'Analysis', desc: 'Parse all source files into an AST using tree-sitter' },
+    { tool: 'ultron_run_rules', category: 'Analysis', desc: 'Run deterministic rules (SQLi, path traversal, SSRF, etc.)' },
+    { tool: 'ultron_run_llm_detection', category: 'Analysis', desc: 'Run LLM-powered vulnerability detection agent' },
+    { tool: 'ultron_get_findings', category: 'Results', desc: 'Get cached security findings from a previous scan' },
+    { tool: 'ultron_get_security_graph', category: 'Results', desc: 'Get full cached security graph (flows, subgraphs, summary)' },
+    { tool: 'ultron_get_config', category: 'Configuration', desc: 'Show full configuration (ultron_config.json)' }
+  ];
+
   return (
-    <div className="relative min-h-screen bg-[#050505] flex flex-col items-center justify-between text-white overflow-hidden scanline">
+    <div className="relative min-h-screen w-full bg-[#050505] flex flex-col items-center text-white scrollbar-thin scanline">
       {/* Background Interactive canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+      <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
 
       {/* Grid background overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black z-0 pointer-events-none" />
 
       {/* Top Header details */}
-      <header className="w-full max-w-7xl px-8 h-20 flex items-center justify-between z-10 border-b border-border bg-[#050505]/40 backdrop-blur-sm">
+      <header className="w-full max-w-7xl px-8 h-20 flex items-center justify-between z-10 border-b border-border bg-[#050505]/40 backdrop-blur-sm sticky top-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded border border-primary flex items-center justify-center bg-black/50 shadow-[0_0_8px_rgba(255,32,32,0.4)]">
             <span className="text-primary font-bold text-sm tracking-tighter">U</span>
@@ -200,10 +226,10 @@ export default function LandingPage() {
         ) : (
           <div className="flex items-center gap-4 text-xs font-mono text-text-secondary">
             <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">MCP_SERVER: ONLINE</span>
-            <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">VERSION: 2.1.0</span>
+            <span className="hidden sm:inline border border-border px-2 py-0.5 rounded bg-black/30">VERSION: 8b</span>
             <Link 
               href="/login" 
-              className="border border-border bg-black hover:border-primary px-3 py-1 rounded text-white transition cursor-pointer"
+              className="border border-border bg-black hover:border-primary px-3 py-1 rounded text-white transition cursor-pointer font-bold"
             >
               LOGIN
             </Link>
@@ -218,7 +244,7 @@ export default function LandingPage() {
             {/* Tagline Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/30 bg-primary/5 rounded font-mono text-[10px] text-primary tracking-widest uppercase">
               <ShieldAlert className="w-3.5 h-3.5" />
-              CYBERSECURITY MULTI-AGENT STATIC SCANNER
+              LOCAL-FIRST MULTI-AGENT STATIC SECURITY SYSTEM
             </div>
 
             {/* Title */}
@@ -237,31 +263,28 @@ export default function LandingPage() {
             </div>
 
             <p className="text-text-secondary text-sm sm:text-base font-mono leading-relaxed max-w-xl">
-              Ultron compiles your code, generates intermediate representations, conducts full taint-flow mapping, and leverages autonomous AI agents to audit finding authenticity.
+              A local-first multi-agent system that finds security flaws in source code — combining tree-sitter AST analysis, IR-based taint propagation, and specialized LLM agents.
             </p>
 
-            {/* 3 Hero Action Buttons */}
+            {/* 3 Hero Action Buttons with Laptop, Server, Globe logos */}
             <div className="flex flex-wrap gap-3.5 pt-4 font-mono">
-              {/* Button 1: Use locally (GitHub link) */}
-              <a 
-                href="https://github.com/aaditya-paul/project-ultron" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs px-4 py-3 rounded border border-transparent shadow-[0_0_15px_rgba(255,32,32,0.4)] transition-all duration-150 active:scale-95 cursor-pointer font-bold"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                </svg>
-                USE LOCALLY
-              </a>
-
-              {/* Button 2: Use MCP Server (Alert) */}
+              {/* Button 1: Use locally (Laptop Logo -> Smooth Scrolls to Manual Setup) */}
               <button 
                 type="button"
-                onClick={handleMcpAlert}
+                onClick={() => scrollToSection('use-locally-section')}
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs px-4 py-3 rounded border border-transparent shadow-[0_0_15px_rgba(255,32,32,0.4)] transition-all duration-150 active:scale-95 cursor-pointer font-bold"
+              >
+                <Laptop className="w-4 h-4 text-white" />
+                USE LOCALLY
+              </button>
+
+              {/* Button 2: Use MCP Server (Server Logo -> Smooth Scrolls to MCP Setup) */}
+              <button 
+                type="button"
+                onClick={() => scrollToSection('use-mcp-section')}
                 className="inline-flex items-center gap-2 border border-border bg-black/60 hover:bg-card text-white text-xs px-4 py-3 rounded hover:border-primary/50 transition-all duration-150 cursor-pointer font-bold"
               >
-                <Lock className="w-4 h-4 text-primary" />
+                <Server className="w-4 h-4 text-primary" />
                 USE MCP SERVER
               </button>
 
@@ -291,7 +314,7 @@ export default function LandingPage() {
               </div>
               <div className="space-y-1.5 text-left leading-relaxed">
                 <div><span className="text-primary font-bold">[!]</span> Initializing analyzer pipeline...</div>
-                <div><span className="text-white">[i]</span> Mapping package boundaries: TypeScript v5.1</div>
+                <div><span className="text-white">[i]</span> Mapping package boundaries: Python 3.10+</div>
                 <div><span className="text-white">[i]</span> Nodes generated: 8,421 declarations parsed</div>
                 <div><span className="text-white">[i]</span> Generating control flow graphs... DONE</div>
                 <div><span className="text-white">[i]</span> Running 24 taint queries on database sources</div>
@@ -334,6 +357,180 @@ export default function LandingPage() {
             })}
           </div>
         </section>
+
+        {/* STACKED SETUP SECTION 1: USE LOCALLY INSTRUCTIONS (REBUILT FROM README) */}
+        <section id="use-locally-section" className="py-16 border-t border-border space-y-6 text-left font-mono">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 border border-primary/40 bg-primary/10 rounded">
+                <Laptop className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-sans font-bold text-xl text-white tracking-wide">1. LOCAL ENGINE QUICKSTART & CLI SETUP</h2>
+                <p className="text-text-secondary text-xs">Run Ultron natively on Python 3.10+ with local Ollama or cloud models.</p>
+              </div>
+            </div>
+            
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 text-[10px]">
+              <span className="bg-blue-950/80 text-blue-400 border border-blue-800 px-2 py-0.5 rounded font-bold">python-3.10+</span>
+              <span className="bg-emerald-950/80 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded font-bold">tests 86 passing</span>
+              <span className="bg-amber-950/80 text-amber-400 border border-amber-800 px-2 py-0.5 rounded font-bold">license MIT</span>
+              <span className="bg-rose-950/80 text-rose-400 border border-rose-800 px-2 py-0.5 rounded font-bold">local-first ✓</span>
+            </div>
+          </div>
+
+          <div className="border border-border bg-surface p-6 rounded space-y-6 shadow-xl">
+            {/* Terminal execution block */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-white">
+                <TerminalSquare className="w-4 h-4 text-primary" />
+                <span>Quickstart Terminal Execution:</span>
+              </div>
+              <div className="bg-black border border-border p-4 rounded text-xs space-y-3 font-mono leading-relaxed">
+                <div className="text-text-secondary"># 1. Install dependencies (tree-sitter, httpx, graphviz)</div>
+                <div className="text-primary font-bold">pip install -r requirements.txt</div>
+
+                <div className="text-text-secondary pt-2"># 2. Run security analysis on a Git repository</div>
+                <div className="text-success font-bold">python ultron.py https://github.com/user/repo</div>
+
+                <div className="text-text-secondary pt-2"># 3. Pass --fix to invoke specialized LLM Refactoring Agents</div>
+                <div className="text-white font-bold">python ultron.py scan . --fix</div>
+              </div>
+            </div>
+
+            {/* CLI Commands Reference Table */}
+            <div className="space-y-3">
+              <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Wrench className="w-3.5 h-3.5 text-primary" />
+                <span>Ultron CLI Command Suite</span>
+              </div>
+              <div className="border border-border rounded overflow-hidden">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-black/60 text-text-secondary border-b border-border">
+                    <tr>
+                      <th className="p-2.5 font-bold">Command</th>
+                      <th className="p-2.5 font-bold">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 bg-black/20">
+                    {cliCommands.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-card/40 transition">
+                        <td className="p-2.5 font-bold text-primary whitespace-nowrap">{item.cmd}</td>
+                        <td className="p-2.5 text-text-secondary">{item.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Pre-commit Hook */}
+            <div className="bg-black/40 border border-border p-4 rounded text-xs space-y-2">
+              <div className="flex items-center gap-2 text-white font-bold">
+                <GitPullRequest className="w-4 h-4 text-primary" />
+                <span>Pre-Commit Git Security Hook Integration</span>
+              </div>
+              <p className="text-text-secondary text-[11px]">
+                Install a built-in pre-commit security filter directly inside your project folder:
+              </p>
+              <div className="bg-black p-2 rounded border border-border text-primary font-mono text-[11px]">
+                python ultron.py install-hook .
+              </div>
+              <div className="text-[10px] text-text-secondary pt-1">
+                Bypass one-time commits using <code className="text-white">git commit --no-verify</code> or <code className="text-white">ULTRON_DISABLE_HOOK=1</code>.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STACKED SETUP SECTION 2: USE MCP SERVER INSTRUCTIONS (REBUILT FROM README) */}
+        <section id="use-mcp-section" className="py-16 border-t border-border space-y-6 text-left font-mono">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <div className="p-2 border border-primary/40 bg-primary/10 rounded">
+              <Server className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-sans font-bold text-xl text-white tracking-wide">2. MODEL CONTEXT PROTOCOL (MCP) SERVER</h2>
+              <p className="text-text-secondary text-xs">Expose 18 security tools directly to Claude Desktop, Cursor, opencode, and VS Code Copilot Agent.</p>
+            </div>
+          </div>
+
+          <div className="border border-border bg-surface p-6 rounded space-y-6 shadow-xl">
+            {/* Transport Launch Commands */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Option A: Stdio */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wider block border-b border-border/60 pb-1">
+                  Option A: Stdio Transport (Desktop Clients)
+                </span>
+                <div className="bg-black border border-border p-4 rounded text-xs space-y-2 font-mono text-text-secondary">
+                  <div># Launch stdio MCP daemon for Claude & Cursor</div>
+                  <div className="text-primary font-bold">python routes/mcp_server.py</div>
+                  <div className="text-[10px] text-text-secondary pt-2">Compatible with opencode, Claude Desktop, Cursor, and Antigravity</div>
+                </div>
+              </div>
+
+              {/* Option B: SSE */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wider block border-b border-border/60 pb-1">
+                  Option B: SSE Transport (Web Clients)
+                </span>
+                <div className="bg-black border border-border p-4 rounded text-xs space-y-2 font-mono text-text-secondary">
+                  <div># Launch SSE MCP server on port 8743</div>
+                  <div className="text-success font-bold">python routes/mcp_server.py --sse --port 8743</div>
+                  <div className="text-[10px] text-text-secondary pt-2">SSE Endpoint: http://localhost:8743/sse</div>
+                </div>
+              </div>
+            </div>
+
+            {/* MCP JSON Config Block */}
+            <div className="bg-black/40 border border-border p-4 rounded text-xs space-y-2">
+              <div className="text-white font-bold flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5 text-primary" />
+                <span>Claude Desktop & Cursor Config (`claude_desktop_config.json`):</span>
+              </div>
+              <pre className="text-[10px] text-primary font-mono overflow-x-auto p-3 bg-black rounded border border-border leading-relaxed">
+{`{
+  "mcpServers": {
+    "ultron": {
+      "command": "python",
+      "args": ["routes/mcp_server.py"]
+    }
+  }
+}`}
+              </pre>
+            </div>
+
+            {/* 18 FastMCP Tools Summary Table */}
+            <div className="space-y-3">
+              <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span>Exposed FastMCP Security Tools (18 Active Tools)</span>
+              </div>
+              <div className="border border-border rounded overflow-hidden max-h-64 overflow-y-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-black/60 text-text-secondary border-b border-border sticky top-0">
+                    <tr>
+                      <th className="p-2 font-bold">Tool Name</th>
+                      <th className="p-2 font-bold">Category</th>
+                      <th className="p-2 font-bold">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 bg-black/20 text-[11px]">
+                    {mcpToolsList.map((t, idx) => (
+                      <tr key={idx} className="hover:bg-card/40 transition">
+                        <td className="p-2 font-bold text-success">{t.tool}</td>
+                        <td className="p-2 text-text-secondary">{t.category}</td>
+                        <td className="p-2 text-white">{t.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer details */}
@@ -342,8 +539,8 @@ export default function LandingPage() {
           <span>&copy; 2026 ULTRON INC. PLATFORM SECURED.</span>
           <div className="flex gap-6 mt-4 sm:mt-0">
             <a href="https://github.com/aaditya-paul/project-ultron" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">GITHUB REPO</a>
-            <a href="#" className="hover:text-white transition">MCP SPEC</a>
-            <a href="#" className="hover:text-white transition">REST ENDPOINTS</a>
+            <a href="#use-mcp-section" className="hover:text-white transition">MCP SPEC</a>
+            <a href="#use-locally-section" className="hover:text-white transition">LOCAL SETUP</a>
           </div>
         </div>
       </footer>
