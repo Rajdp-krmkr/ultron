@@ -11,6 +11,7 @@ import {
   Network, 
   Code2, 
   ArrowRight,
+  ArrowDown,
   Layers,
   Lock,
   Binary,
@@ -24,7 +25,11 @@ import {
   ExternalLink,
   Wrench,
   Sparkles,
-  GitPullRequest
+  GitPullRequest,
+  GitBranch,
+  FileText,
+  Search,
+  Activity
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -156,6 +161,17 @@ export default function LandingPage() {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const modelFlowSteps = [
+    { name: 'Clone', icon: GitBranch, desc: 'Repository Git Checkout & Workspace Init' },
+    { name: 'Convert to AST', icon: Code2, desc: 'Tree-Sitter Multi-Language Grammar Parsing' },
+    { name: 'IR Pipeline', icon: Layers, desc: '3AC Single Static Assignment Translation' },
+    { name: 'Dependency Graph', icon: Network, desc: 'Cross-File Symbol Resolution & Call Links' },
+    { name: 'Taint Path', icon: Workflow, desc: 'Backward Propagation from Sinks to Sources' },
+    { name: 'Static Analysis', icon: Search, desc: 'Deterministic Rule Signatures & AST Audits' },
+    { name: 'Dynamic Analysis', icon: Cpu, desc: 'Autonomous LLM Verification & Agentic Loop' },
+    { name: 'Report', icon: FileText, desc: 'Executive PDF, Markdown & JSON Dataset Export' }
+  ];
 
   const features = [
     { icon: Code2, title: 'AST Parsing', desc: 'Parses codebases into concrete AST formats mapping symbols across packages.' },
@@ -328,8 +344,63 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* AI MODEL PIPELINE FLOW SECTION (EXACT GRAPH RECREATED) */}
+        <section className="py-20 border-t border-border mt-20 font-mono text-center">
+          <div className="space-y-3 mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/30 bg-primary/5 rounded text-[10px] text-primary tracking-widest uppercase">
+              <Activity className="w-3.5 h-3.5" />
+              END-TO-END EXECUTION FLOW
+            </div>
+            <h2 className="font-sans font-bold text-2xl sm:text-3xl tracking-tight text-white">
+              AI Model Pipeline Architecture
+            </h2>
+            <p className="text-text-secondary text-xs max-w-lg mx-auto leading-relaxed">
+              Visualizing the 8 execution stages from initial repository clone to autonomous LLM verification and report synthesis.
+            </p>
+          </div>
+
+          {/* Vertical Glowing Flowchart Diagram */}
+          <div className="max-w-md mx-auto flex flex-col items-center space-y-3">
+            {modelFlowSteps.map((step, idx) => {
+              const StepIcon = step.icon;
+              return (
+                <React.Fragment key={step.name}>
+                  {/* Step Card */}
+                  <div className="w-full border border-border hover:border-primary bg-surface/90 backdrop-blur p-4 rounded-lg shadow-lg flex items-center justify-between gap-4 transition-all duration-200 group hover:shadow-[0_0_15px_rgba(255,32,32,0.2)]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-9 h-9 rounded border border-border bg-black flex items-center justify-center group-hover:border-primary group-hover:bg-primary/10 transition">
+                        <StepIcon className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-white font-sans font-bold text-sm group-hover:text-primary transition block">
+                          {step.name}
+                        </span>
+                        <span className="text-[10px] text-text-secondary line-clamp-1">
+                          {step.desc}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="text-[10px] font-bold text-primary border border-primary/30 bg-primary/10 px-2 py-0.5 rounded font-mono shrink-0">
+                      STAGE 0{idx + 1}
+                    </span>
+                  </div>
+
+                  {/* Down Arrow Connector (except last item) */}
+                  {idx < modelFlowSteps.length - 1 && (
+                    <div className="flex flex-col items-center py-0.5">
+                      <div className="w-0.5 h-4 bg-gradient-to-b from-primary to-primary/30 animate-pulse" />
+                      <ArrowDown className="w-4 h-4 text-primary animate-bounce -mt-1" />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Feature showcase grid */}
-        <section className="py-24 border-t border-border mt-20">
+        <section className="py-24 border-t border-border mt-10">
           <div className="text-center space-y-3 mb-16">
             <h2 className="font-sans font-bold text-2xl sm:text-3xl tracking-tight text-white">
               Advanced Security Engineering Capabilities
@@ -465,7 +536,7 @@ export default function LandingPage() {
                   Option A: Stdio Transport (Desktop Clients)
                 </span>
                 <div className="bg-black border border-border p-4 rounded text-xs space-y-2 font-mono text-text-secondary">
-                  <div># Launch stdio MCP daemon for Claude & Cursor</div>
+                  <div># Launch stdio MCP server daemon</div>
                   <div className="text-primary font-bold">python routes/mcp_server.py</div>
                   <div className="text-[10px] text-text-secondary pt-2">Compatible with opencode, Claude Desktop, Cursor, and Antigravity</div>
                 </div>
