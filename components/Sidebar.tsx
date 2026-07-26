@@ -9,11 +9,9 @@ import {
   GitFork, 
   AlertTriangle, 
   FileText, 
-  Terminal as TerminalIcon, 
   Settings as SettingsIcon,
   ChevronsLeft,
-  ChevronsRight,
-  Link2
+  ChevronsRight
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,8 +28,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     { name: 'Pipeline', icon: GitFork, path: '/pipeline' },
     { name: 'Findings', icon: AlertTriangle, path: '/findings' },
     { name: 'Reports', icon: FileText, path: '/reports' },
-    { name: 'API Explorer', icon: TerminalIcon, path: '/api-explorer' },
-    { name: 'MCP Integration', icon: Link2, path: '/mcp' },
     { name: 'Settings', icon: SettingsIcon, path: '/settings' }
   ];
 
