@@ -4,22 +4,15 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Shield, 
   LayoutDashboard, 
   SearchCode, 
   GitFork, 
   AlertTriangle, 
-  FileJson, 
-  Network, 
-  Workflow, 
-  Cpu, 
   FileText, 
-  Code2, 
   Terminal as TerminalIcon, 
   Settings as SettingsIcon,
   ChevronsLeft,
   ChevronsRight,
-  Fingerprint,
   Link2
 } from 'lucide-react';
 
@@ -36,13 +29,6 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     { name: 'Analyze Repository', icon: SearchCode, path: '/analyze' },
     { name: 'Pipeline', icon: GitFork, path: '/pipeline' },
     { name: 'Findings', icon: AlertTriangle, path: '/findings' },
-    { name: 'AST Explorer', icon: Code2, path: '/ast' },
-    { name: 'IR Explorer', icon: FileJson, path: '/ir' },
-    { name: 'Taint Graph', icon: Workflow, path: '/graphs/taint' },
-    { name: 'Call Graph', icon: Network, path: '/graphs/call' },
-    { name: 'Security Graph', icon: Shield, path: '/graphs/security' },
-    { name: 'Rule Engine', icon: Fingerprint, path: '/rules' },
-    { name: 'LLM Verification', icon: Cpu, path: '/llm-verification' },
     { name: 'Reports', icon: FileText, path: '/reports' },
     { name: 'API Explorer', icon: TerminalIcon, path: '/api-explorer' },
     { name: 'MCP Integration', icon: Link2, path: '/mcp' },

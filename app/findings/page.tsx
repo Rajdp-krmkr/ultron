@@ -52,23 +52,19 @@ export default function FindingsDashboard() {
       (verifiedFilter === 'Verified' && finding.verifiedByLlm) || 
       (verifiedFilter === 'Unverified' && !finding.verifiedByLlm);
 
-    const matchesRepo = !selectedRepoId || finding.repoId === selectedRepoId || !finding.repoId;
-
-    return matchesSearch && matchesSev && matchesStatus && matchesVerified && matchesRepo;
+    return matchesSearch && matchesSev && matchesStatus && matchesVerified;
   });
 
-  const displayFindings = filteredFindings.length > 0 ? filteredFindings : findings;
+  const displayFindings = filteredFindings;
 
   return (
     <div className="space-y-6 font-mono text-xs">
       {/* Top Banner */}
-      <div className="border border-border bg-surface p-4 rounded flex justify-between items-center">
+      <div className="border border-border bg-surface p-4 rounded flex justify-between items-center text-left">
         <div className="space-y-0.5">
           <h2 className="text-sm font-sans font-bold text-white tracking-widest uppercase">SECURITY FINDINGS AUDIT LAB</h2>
           <p className="text-text-secondary text-[10px]">Filter, review, and patch security vulnerabilities confirmed by multi-agent analysis.</p>
-          {activeRepo && (
-            <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ ACTIVE REPO: {activeRepo.name}</p>
-          )}
+          <p className="text-[10px] text-primary font-bold font-mono mt-0.5">▸ INDEPENDENT ENGINE AUDIT LAB: {findings.length} TOTAL VULNERABILITIES DETECTED</p>
         </div>
 
         <div className="flex gap-2 border border-border rounded bg-black/40 p-0.5">
