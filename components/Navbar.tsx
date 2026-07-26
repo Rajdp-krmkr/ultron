@@ -145,24 +145,6 @@ export function Navbar() {
           </div>
         )}
 
-        {/* Telemetry metrics matching Ultron config */}
-        <div className="hidden md:flex items-center gap-3 text-[9px] font-mono border-l border-border pl-4">
-          <div className="flex items-center gap-1">
-            <Globe className="w-2.5 h-2.5 text-primary" />
-            <span className="text-text-secondary">MODE:</span>
-            <span className="text-white font-bold">{settings.llm_mode.toUpperCase()}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Cpu className="w-2.5 h-2.5 text-success animate-pulse" />
-            <span className="text-text-secondary">WORKERS:</span>
-            <span className="text-white font-bold">{settings.num_workers}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Activity className="w-2.5 h-2.5 text-low" />
-            <span className="text-text-secondary">CACHE:</span>
-            <span className="text-white font-bold">{settings.enable_cache ? 'ON' : 'OFF'}</span>
-          </div>
-        </div>
       </div>
 
       {/* Right Side Icons */}
